@@ -1,1 +1,1 @@
-web gunicorn accounting:application --log-file -
+web gunicorn finance:application --log-file -
