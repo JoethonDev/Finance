@@ -28,8 +28,6 @@ django-taggit==3.0.0
 djangorestframework==3.13.1
 englisttohindi==4.1.0
 et-xmlfile==1.1.0
-google-trans-new==1.1.9
-googletrans==3.0.0
 greenlet==2.0.1
 gunicorn==21.2.0
 h11==0.14.0
