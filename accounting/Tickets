@@ -1,0 +1,36 @@
+Transactions Page :
+    Fix Form
+        - any rejected action pop-up Message at top of window
+        - quantity available must be valid
+    
+    Fix CheckOut Table
+        - 'x' to delete single row
+        - clear all unlock form
+        - send multiples id of inventories [TODO] [Testing]
+
+    Fix Table of all rows: [Done]
+        - search by date and time [TODO]
+
+    Backend 
+        - update Inventory Balance [Testing]
+        - make each inventory with the transaction_item [Testing]
+        - make purchase and sell changes [ + || - ] [Testing]
+
+Items Page :
+    overview Table :
+        - search by code
+        - get more items using row number selector
+        - move using Pagination [numbers]
+        - move using Pagination [arrows]
+
+Categories Page :
+    overview Table :
+        - search by code
+
+Invoice Page :
+    print function [Control it using Js to make auto print] [maybe use django better]
+
+=> Add Pagination to all pages
+=> Use Js to retrieve new pages without refreshing
+
+

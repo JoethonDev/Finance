@@ -1,0 +1,223 @@
+{% extends 'finance/layout.html' %}
+{% load static %}
+
+{% block body %}
+    <!-- Form Start -->
+    <div class="container mb-5 mt-5">
+      <div class="btn-group mb-4" role="group" aria-label="Basic radio toggle button group">
+        <input type="radio" class="btn-check" name="pageSwitch" id="categories" >
+        <label class="btn btn-outline-primary" for="categories">الاصناف</label>
+      
+        <input type="radio" class="btn-check" name="pageSwitch" id="items">
+        <label class="btn btn-outline-primary" for="items">البضاعه</label>
+      </div>
+
+      <form class="row g-3 items d-none" method="post">
+          {% csrf_token %}
+          <input value="item" name="kind" hidden>
+          <div class="col-auto dropdown" id="itemDropDown">
+            <label for="item">الاضناف</label>
+            <input type="text" class="form-control category-search" aria-label="Default select example" name="item" id="item" data-id="category">
+            <ul class="dropdown-menu">
+            </ul>
+          </div>
+          <div class="col-auto">
+            <label for="nameItem">البضاعه</label>
+            <input type="text" class="form-control" id="nameItem" placeholder="" name="name">
+          </div>
+          <div class="col-auto">
+            <label for="codeItem">الكود</label>
+            <input type="text" class="form-control" id="codeItem" placeholder="" name="code">
+          </div>
+          <div class="col-auto">
+            <label for="unitItem">الوحده</label>
+            <input type="text" class="form-control" id="unitItem" placeholder="" name="unit">
+          </div>
+          <div class="col-auto">
+            <label for="purchasePriceItem">سعر الشراء</label>
+            <input type="text" class="form-control" id="purchasePriceItem" placeholder="" name="purchasePrice">
+          </div>
+          <div class="col-auto">
+            <label for="sellPriceItem">سعر البيع</label>
+            <input type="text" class="form-control" id="sellPriceItem" placeholder="" name="sellPrice">
+          </div>
+          <div class="col-auto">
+            <label for="quantityItem">الكميه</label>
+            <input type="text" class="form-control" id="quantityItem" placeholder="" name="quantity">
+          </div>
+          <div class="col-auto">
+            <label for="quantityFromLastYearItem"> كميه اول المده</label>
+            <input type="text" class="form-control" id="quantityFromLastYearItem" placeholder="" name="quantityFromLastYear">
+          </div>
+          <div class="col-auto btn-contianer">
+            <button type="submit" class="btn btn-primary">اضافه</button>
+          </div>
+      </form>
+
+      <form class="row g-3 category" method="post">
+          {% csrf_token %}
+          <input value="category" name="kind" hidden>
+          <div class="col-auto">
+            <label for="nameCategory">الاسم</label>
+            <input type="text" class="form-control" id="nameCategory" value="" name="name">
+          </div>
+          <div class="col-auto">
+            <label for="codeCategory">الكود</label>
+            <input type="text" class="form-control" id="codeCategory" placeholder="" name="code">
+          </div>
+          <div class="col-auto dropdown" id="categoryDropDown">
+            <label for="category">الاصناف</label>
+            <input type="text" class="form-control category-search" aria-label="Default select example" name="category" id="category" data-id="category">
+            <ul class="dropdown-menu">
+            </ul>
+          </div>
+          <div class="col-auto btn-contianer">
+            <button type="submit" class="btn btn-primary">اضافه</button>
+          </div>
+      </form>
+    </div>
+    <!-- Form End -->
+
+
+    <!-- Table Start -->
+    <div class="container rounded border p-5">
+        <form class="d-flex row g-3 mb-4" role="search">
+            <div class="col-10 row">
+              <div class="col-auto">
+                <label for="search">البحث بالاسم</label>
+                <input class="form-control me-2" type="search" placeholder="بحث..." aria-label="Search" id="search">
+              </div>
+              <div class="col-auto">
+                <label for="search">البحث بالكود</label>
+                <input class="form-control me-2" type="search" placeholder="بحث..." aria-label="Search" id="searchCode">
+              </div>
+              <div class="col-auto btn-contianer">
+                <button type="submit" class="btn btn-primary" id="searchBtn">بحث</button>
+              </div>  
+            </div>
+            <div class="col-1">
+              <select class="form-select" aria-label="Default select example" id="rowsPerPage">
+                {% for value in rowsOptions %}
+                  {% if value == rows %}
+                    <option value="{{ value }}" selected>{{ value }}</option>
+                  {% else %}
+                    <option value="{{ value }}">{{ value }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+        </form>
+        <table class="table table-striped category">
+            <thead>
+              <tr>
+                  <th scope="col">الكود</th>
+                  <th scope="col">الاسم</th>
+                  <th scope="col">المشتق منه</th>
+                  <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                    <tr>
+                        <th scope="row">{{ category.code }}</th>
+                        <td class="name">{{ category.category }}</td>
+                        <td>{{ category.categoryParent }}</td>
+                        <td>
+                            <button type="button" class="btn btn-light" data-id="{{ category.id }}">تقرير</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table class="table table-striped items d-none">
+          <thead>
+            <tr>
+                <th scope="col">الكود</th>
+                <th scope="col">الاسم</th>
+                <th scope="col">كميه</th>
+                <th scope="col">الوحده</th>
+                <th scope="col">الصنف</th>
+                <th scope="col">سعر الشراء</th>
+                <th scope="col">سعر البيع</th>
+                <th scope="col">كميه اول المده</th>
+                <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+              {% for item in items %}
+                  <tr>
+                      <th scope="row">{{ item.code }}</th>
+                      <td class="name">{{ item.item }}</td>
+                      <td>{{ item.quantity }}</td>
+                      <td> {{ item.unit }} </td>
+                      <td>{{ item.category }}</td>
+                      <td>{{ item.purchasePrice }}</td>
+                      <td>{{ item.sellPrice }}</td>
+                      <td> {{ item.quantityFromLastYear }} </td>
+                      <td>
+                          <button type="button" class="btn btn-light" data-id="{{ item.id }}">تقرير</button>
+                      </td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+
+      <nav aria-label="Page navigation example" class="pageContainer">
+        <ul class="pagination">
+          {% if not currentPage.has_previous %}
+            <li class="page-item disabled arrows previous">
+              <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item arrows previous">
+              <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% endif %}
+
+          {% for page in currentPage.paginator.page_range %}
+            
+            {% if page == currentPage.number %}
+              <li class="page-item numbers active" data-id="{{ page }}">
+                <a class="page-link">
+                  <span aria-hidden="true">{{ page }}</span>
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item numbers" data-id="{{ page }}">
+                <a class="page-link">
+                  <span aria-hidden="true">{{ page }}</span>
+                </a>
+              </li>
+            {% endif %}
+
+          {% endfor %}
+
+          {% if not currentPage.has_next %}
+            <li class="page-item arrows next disabled">
+              <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+        {% else %}
+          <li class="page-item arrows next">
+            <a class="page-link" href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        {% endif %}
+          
+        </ul>
+      </nav>
+
+    </div>
+    <!-- Table End -->
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'finance/items.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,22 @@
+Transactions Page :
+    Rendering template
+            - transaction type should be in arabic
+            
+    Fix Form
+        - item name like search box using drop down list 5 limit [Test] [Done]
+        - code field get item info too [Test] [Done]
+        - user field like search box using drop-down list 5 limit [Test] [Done]
+    
+    Fix CheckOut Table
+        - add clear all button in the end of table [Test] [Done]
+        - add 'x' button at the end of each row [Test] [Done]
+
+
+    Fix Table of all rows: [Done]
+        - in rendering when loop over items should not put ',' after last item
+        - search by user name
+        - search by transaction type
+        - search by date Period
+        - search by id
+        - search by total price range
+
