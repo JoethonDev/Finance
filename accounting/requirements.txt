@@ -103,3 +103,4 @@ webencodings==0.5.1
 whitenoise==6.5.0
 wsproto==1.2.0
 xhtml2pdf==0.2.11
+Psycopg2-binary==2.9.7

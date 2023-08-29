@@ -1,4 +1,2 @@
-web: python manage.py runserver 0.0.0.0:$PORT --noreload
-web: gunicorn accounting.wsgi --log-file -
-web: gunicorn finance.wsgi:application
-web: gunicorn accounting.wsgi:application
+release: python manage.py migrate
+web: gunicorn accounting.wsgi
