@@ -248,7 +248,7 @@ def items(request):
                 }, status=200, safe=False)
     
     elif request.method == 'POST':
-        if request.POST['kind'] == 'item':
+        if request.POST['kind'] == 'items' or request.POST['kind'] == 'item':
             name = request.POST.get('name') 
             code = request.POST.get('code')
             category = request.POST.get('categoryItem')
@@ -258,7 +258,8 @@ def items(request):
             unit = request.POST.get('unit')
             quantityFromLastYear = request.POST.get('quantityFromLastYear') or 0
             if name and code and category and unit:
-                categoryObj = ItemsCategories.objects.get(pk=category)
+
+                categoryObj = ItemsCategories.objects.get(category=category)
                 Items.objects.create(item=name, code=code, category=categoryObj, unit=unit, sellPrice=sellPrice, purchasePrice=purchasePrice, quantity=quantity, quantityFromLastYear=quantityFromLastYear)
         else :
             name = request.POST['name'] 
