@@ -223,7 +223,7 @@ def items(request):
             currentPage = currentPageCategories
 
         if refresh == True:
-            return render(request, 'finance/items.html',{
+            return render(request, 'finance/Items.html',{
                 'categories' : categoriesRows,
                 'items' : itemsRows,
                 'rows' : int(rows),
