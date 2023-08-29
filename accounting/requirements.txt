@@ -91,7 +91,6 @@ social-auth-core==4.3.0
 sortedcontainers==2.4.0
 soupsieve==2.4
 sqlparse==0.4.3
-submit50==3.1.1
 svglib==1.5.1
 termcolor==1.1.0
 tinycss2==1.2.1
@@ -103,7 +102,7 @@ typing_extensions==4.5.0
 tzdata==2022.7
 tzlocal==5.0.1
 uritools==4.0.1
-urllib3==1.26.14
+urllib3==2.0.4
 vboxapi==1.0
 webencodings==0.5.1
 whitenoise==6.5.0
