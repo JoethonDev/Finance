@@ -114,6 +114,7 @@
                   <th scope="col">الاسم</th>
                   <th scope="col">المشتق منه</th>
                   <th scope="col"></th>
+                  <th scope="col"></th>
               </tr>
             </thead>
             <tbody>
@@ -123,7 +124,10 @@
                         <td class="name">{{ category.category }}</td>
                         <td>{{ category.categoryParent }}</td>
                         <td>
-                            <button type="button" class="btn btn-light" data-id="{{ category.id }}">تقرير</button>
+                            <button type="button" class="btn btn-light report" data-id="{{ category.id }}">تقرير</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger delete" data-id="{{ category.id }}">حذف</button>
                         </td>
                     </tr>
                 {% endfor %}
@@ -142,6 +146,7 @@
                 <th scope="col">سعر البيع</th>
                 <th scope="col">كميه اول المده</th>
                 <th scope="col"></th>
+                <th scope="col"></th>
             </tr>
           </thead>
           <tbody>
@@ -149,14 +154,17 @@
                   <tr>
                       <th scope="row">{{ item.code }}</th>
                       <td class="name">{{ item.item }}</td>
-                      <td>{{ item.quantity }}</td>
+                      <td class="quantity">{{ item.quantity }}</td>
                       <td> {{ item.unit }} </td>
                       <td>{{ item.category }}</td>
                       <td>{{ item.purchasePrice }}</td>
                       <td>{{ item.sellPrice }}</td>
                       <td> {{ item.quantityFromLastYear }} </td>
                       <td>
-                          <button type="button" class="btn btn-light" data-id="{{ item.id }}">تقرير</button>
+                          <button type="button" class="btn btn-light report" data-id="{{ item.id }}">تقرير</button>
+                      </td>
+                      <td>
+                          <button type="button" class="btn btn-danger delete" data-id="{{ item.id }}">حذف</button>
                       </td>
                   </tr>
               {% endfor %}

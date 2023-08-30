@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const NUMBERSCONTAINER = document.querySelector('.pagination')
     const SEARCHBTN = document.querySelector('#searchBtn')
     const CATEGORY = document.querySelectorAll('.category-search')
+    const CSRTTOKEN = document.querySelector('input[name="csrfmiddlewaretoken"]').value
 
     PAGESWITCH.forEach(element => {
         element.addEventListener('click', (e)=> {
@@ -184,7 +185,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }   
     }
 
-
     function pageSwitch(page){
         kind = page
         if (page == 'categories'){
@@ -236,6 +236,19 @@ document.addEventListener('DOMContentLoaded', function() {
             // Change Rows
             document.querySelector('.category tbody').innerHTML = displayRows(result.categories, 'category')
             document.querySelector('.items tbody').innerHTML = displayRows(result.items, 'items')
+            // Add EventListener to buttons
+            document.querySelectorAll('.category tbody .delete').forEach(element => {
+                element.addEventListener('click' , (e) => {
+                    deleteRow(e, 'category')
+                })
+            })
+            document.querySelectorAll('.items tbody .delete').forEach(element => {
+                element.addEventListener('click' , (e) => {
+                    deleteRow(e, 'items')
+                })
+            })
+
+
             // Hide more Rows pages && Update Max
             if (kind == 'items'){
                 pagesCountItem = result.pagesCount
@@ -260,14 +273,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 <tr>
                       <th scope="row">${ value.code }</th>
                       <td class="name">${ value.item }</td>
-                      <td>${ value.quantity }</td>
+                      <td class="quantity">${ value.quantity }</td>
                       <td> ${ value.unit } </td>
                       <td>${ value.category }</td>
                       <td>${ value.purchasePrice }</td>
                       <td>${ value.sellPrice }</td>
                       <td> ${ value.quantityFromLastYear } </td>
                       <td>
-                          <button type="button" class="btn btn-light" data-id="${ value.id }">تقرير</button>
+                          <button type="button" class="btn btn-light report" data-id="${ value.id }">تقرير</button>
+                      </td>
+                      <td>
+                          <button type="button" class="btn btn-danger delete" data-id="${ value.id }">حذف</button>
                       </td>
                 </tr>
                 
@@ -283,11 +299,64 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>
                         <button type="button" class="btn btn-light" data-id="${ value.id }">تقرير</button>
                     </td>
+                    <td>
+                        <button type="button" class="btn btn-danger delete" data-id="${ value.id }">حذف</button>
+                    </td>
                 </tr>
                 `
             }
         })
         return content
+    }
+
+    function deleteRow(element, tableKind){
+        // On Click element => Check quantity == 0 ? (send request delete ? delete row => do searchRows : send error) : send error [item]
+        // On Click element => send request delete ? delete row then do search : send error [category]
+        // In case of Item
+        let condition = true
+        if (tableKind == 'items'){
+            let quantity = parseInt(element.target.parentNode.parentNode.querySelector('.quantity').innerHTML)
+            if (quantity != 0){
+                condition = false
+            }
+        }
+        // console.log(quantity)
+
+
+        if (condition){
+            // Variables
+            let url = window.location.href.split('?')[0]
+            let id = element.target.dataset.id
+            // Send Request
+            fetch(url, {
+                method : 'DELETE',
+                headers : {
+                    'Content-Type' : 'application/json',
+                    'X-CSRFToken' : CSRTTOKEN
+                },
+                body : JSON.stringify({
+                    'kind' : tableKind,
+                    'id' : id   
+                })
+            })
+            .then(response => response.json().then(data => ({'data' : data, 'status' : response.status})))
+            .then(result => {
+                if (result.status == 403){
+                    // Display error message
+                    console.log(result.data.message)
+                    return
+                }
+                // Display success message
+                console.log(result.data.message)
+                searchRows()
+                return
+
+            })
+        }
+        else{
+            console.log('Error')
+        }
+        return
     }
 
     function paginationControl(){

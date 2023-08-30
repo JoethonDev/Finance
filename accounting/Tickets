@@ -22,15 +22,21 @@ Items Page :
         - get more items using row number selector
         - move using Pagination [numbers]
         - move using Pagination [arrows]
+        - Delete Items [Check quantity == 0] [Front & Back]
 
 Categories Page :
     overview Table :
         - search by code
+        - Delete Category [Check all items' quantity == 0] [Back]
 
 Invoice Page :
     print function [Control it using Js to make auto print] [maybe use django better]
 
+
+Inventory Page :
+    overview Table : 
+        - Delete Inventory [Balance == 0] [Front & Back] [Check no items]
+
 => Add Pagination to all pages
 => Use Js to retrieve new pages without refreshing
-
 

@@ -182,6 +182,20 @@ def items(request):
 
         PUT :
             Update Item/Category
+
+        DELETE :
+            if items :
+                check quantity == 0
+                    delete item
+                else    
+                    return Error
+            elif category :
+                get all items with this parent
+                for each item check quantity == 0
+                    delete category and items
+                else    
+                    return Error
+
     """
     current_url = request.build_absolute_uri().split('/')
 
@@ -272,6 +286,26 @@ def items(request):
                 ItemsCategories.objects.create(category=name, code=code, categoryParent=categoryObj)
 
         return HttpResponseRedirect(reverse(current_url[-1]))  
+    elif request.method == 'DELETE':
+        data = loads(request.body)
+        id = int(data['id'])
+        kind = data['kind']
+        if kind == 'items' or kind == 'item':
+            item = Items.objects.get(pk=id)
+            if item.quantity == 0:
+                item.delete()
+                return JsonResponse({'message' : 'تم حذف المنتج بنجاح'}, status=200)
+
+        else:
+            category = ItemsCategories.objects.get(pk=id)
+            if not any(item.quantity != 0 for item in category.items.all()) : 
+                for item in category.items.all():
+                    # Edit if he need to leave items without deletion.. if he need this syntax then change models easier!
+                    item.delete()
+                category.delete()
+                return JsonResponse({'message' : "تم حذف الصنف بالمنتجات المتعلقه بيه"}, status=200)
+        return JsonResponse({'message' : "لا يمكن تنفيذ العمليه لسبب وجود كميه من المنتج او الصنف"}, status=403)
+            
     pass
 
 def transactions(request):
