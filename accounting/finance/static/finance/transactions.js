@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function(){
     INVENTORY.addEventListener('change', e => {
         let id =  e.target.value
         item.then(result => {
-            console.log(result)
+            // console.log(result)
             displayAvailableQuantity(result.inventories, id)
         })
     })
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 // console.log(availableQuantity < quantity && KIND.value == 'sell')
 
                 if (availableQuantity < quantity && KIND.value == 'sell'){
-                    console.log('Error')
+                    popUp('الكميه المطلوبه اكبر من الموجود بالمخزن', false)
                     return
                 }
                 let condition = true
@@ -266,12 +266,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
     function displayItemInfo(element){
         let value =  element.dataset?.id || element.value
-        console.log(value)
+        // console.log(value)
         item = fetch(`${BASE}/getInfo/item/${value}`)
         .then(response => response.json().then(data => ({'data': data, 'status': response.status})))
         .then(result => {
             if (result.status == 404){
-                console.log(result.data.message)
+                popUp(result.data.message, false)
                 return
             }
             result = result.data.item

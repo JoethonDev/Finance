@@ -651,7 +651,7 @@ def invoice(request, id):
         item['total'] = math.trunc(item['quantity'] * item['pricePerItem'] * 100) / 100
 
 
-    transaction['totalBeforeTax'] = (math.trunc(transaction['totalPrice']) - math.trunc(transaction['tax'])) / 100
+    transaction['totalBeforeTax'] = (math.trunc(transaction['totalPrice'] * 100) - math.trunc(transaction['tax']) * 100) / 100
 
     # pdf = generate_pdf('finance/invoice.html', {'transaction' : transaction})
     # return render_to_pdf_response('finance/invoice.html', {'transaction' : transaction})
