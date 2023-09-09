@@ -30,8 +30,9 @@ def getInfo(request, id=None, name=None):
         category = ItemsCategories.objects.filter(Q(code=id) | Q(pk=id) | Q(category=name))
         if category :
             return JsonResponse({'category' : category[0].serialize()}, status=200)
-        
-    return JsonResponse({'message' : 'Bad Request!'}, status=404)
+    else :
+        return JsonResponse({'message' : 'Bad Request!'}, status=404)
+    return JsonResponse({'message' : 'المنتج غير موجود'}, status=403)
 
 def getRecommendations(request, table, text):
     text = unquote(text)
