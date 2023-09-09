@@ -215,7 +215,7 @@ def searchItemInventory(request):
         itemObj = Items.objects.filter(item=item) 
         if itemObj and inventoryObj :
             itemInventory = Inventory_Items.objects.filter(inventory=inventoryObj[0], item=itemObj[0])
-            if itemInventory :
+            if itemInventory and itemInventory[0].quantity :
                 itemInventory = itemInventory[0]
                 data['availableSearch'] = 'متوفر'
                 data['quantitySearch'] = itemInventory.quantity

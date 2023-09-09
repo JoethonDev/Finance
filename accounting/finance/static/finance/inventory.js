@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Variables
 
     // initial setup
+    console.log(pageKind)
     if (pageKind){
         pageSwitch(pageKind)
 

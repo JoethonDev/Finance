@@ -25,8 +25,8 @@
         <!-- <input type="radio" class="btn-check" name="pageSwitch" id="transferItem">
         <label class="btn btn-outline-primary" for="transferItem">تحويل بضاعه من المخزن</label> -->
 
-        <!-- <input type="radio" class="btn-check" name="pageSwitch" id="checkItem">
-        <label class="btn btn-outline-primary" for="checkItem">بحث بضاعه في المخزن</label> -->
+        <input type="radio" class="btn-check" name="pageSwitch" id="checkItem">
+        <label class="btn btn-outline-primary" for="checkItem">بحث بضاعه في المخزن</label>
       </div>
 
       <form class="row g-3 addInventory" method="post">
@@ -98,7 +98,7 @@
           </div>
       </form>
 
-      <form class="row g-3 checkItem d-none" method="get">
+      <form class="row g-3 checkItem d-none" method="get" action="{% url 'searchItemInventory' %}">
           <div class="row mb-4">
             <div class="col-auto">
               <label for="itemSearch">البضاعه</label>
@@ -182,7 +182,9 @@
                         <td>{{ inventory.place }}</td>
                         <td> {{ inventory.balance }} </td>
                         <td>
-                            <button type="button" class="btn btn-light" data-id="{{ inventory.id }}">تقرير</button>
+                            <button type="button" class="btn btn-light" data-id="{{ inventory.id }}">
+                              <a href="{% url 'inventoryReport' inventory.id %}">تقرير</a>
+                            </button>
                         </td>
                     </tr>
                 {% endfor %}
@@ -252,6 +254,6 @@
         let hasPrevious = {{ inventories.has_previous|lower  }}
         let hasNext = {{ inventories.has_next|lower  }}
         let rowsPerPage = {{ rows }}
-        let pageKind = {{ data.kind }}
+        let pageKind = '{{ data.kind }}'
     </script>
 {% endblock %}

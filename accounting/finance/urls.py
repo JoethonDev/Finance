@@ -6,6 +6,7 @@ urlpatterns = [
     path('', index, name='index'),
     path('inventory', inventory, name='inventory'),
     path('addItemInventory', addItemInventory, name='addItemInventory'),
+    path('searchItemInventory', searchItemInventory, name='searchItemInventory'),
     path('inventoryReport/<int:id>', inventoryReport, name='inventoryReport'),
     path('itemReport/<int:id>', itemReport, name='itemReport'),
     path('items', items, name='items'),

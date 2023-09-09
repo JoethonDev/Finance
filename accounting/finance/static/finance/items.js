@@ -299,7 +299,6 @@ document.addEventListener('DOMContentLoaded', function() {
                       <td>${ value.category }</td>
                       <td>${ value.purchasePrice }</td>
                       <td>${ value.sellPrice }</td>
-                      <td> ${ value.quantityFromLastYear } </td>
                       <td>
                           <button type="button" class="btn btn-light report" data-id="${ value.id }">تقرير</button>
                       </td>
