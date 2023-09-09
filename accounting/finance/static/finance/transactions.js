@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function(){
     // Constants
-    const BASE = window.location.origin
     const KIND = document.querySelector('#kind')
     const USER = document.querySelector('#user')
     const ITEM = document.querySelector('#item')
@@ -22,6 +21,8 @@ document.addEventListener('DOMContentLoaded', function(){
     const IDSEARCH = document.querySelector('#idSearch')
     const FROMPRICESEARCH = document.querySelector('#fromPriceSearch')
     const TOPRICESEARCH = document.querySelector('#toPriceSearch')
+    const FROMDATESEARCH = document.querySelector('#fromDateSearch')
+    const TODATESEARCH = document.querySelector('#toDateSearch')
     const SEARCHBTN = document.querySelector('#searchBtn')
     const TABLETRANSACTIONS = document.querySelector('.table-striped tbody')
     const ROWSPERPAGE = document.querySelector('#rowsPerPage')
@@ -38,16 +39,18 @@ document.addEventListener('DOMContentLoaded', function(){
 
     // Initial Setup
     searchRows()
+    getInfoByText(ITEM, displayItemInfo)
+    inputSwitch()
 
     ITEM.addEventListener('keyup', e => {
-        displayRecommendations(e)
+        displayRecommendations(e.target, displayItemInfo)
     })
     ITEM.addEventListener('change', e => {
-        displayItemInfo(e)
+        displayItemInfo(e.target)
     })
 
     CODE.addEventListener('blur', e => {
-        displayItemInfo(e)
+        displayItemInfo(e.target)
     })
 
     INVENTORY.addEventListener('change', e => {
@@ -59,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function(){
     })
 
     USER.addEventListener('keyup', e => {
-        displayRecommendations(e)
+        displayRecommendations(e.target)
     })
 
     FORM.addEventListener('submit', (e) => {
@@ -68,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function(){
             if (PRICE.value != 0 && QUANTITY.value != 0){
                 // Values
                 let code = CODE.value
-                let product = ITEM.innerHTML
+                let product = ITEM.value
                 let unit = UNIT.value
                 let availableQuantity = parseInt(AVAILABLEQUANTITY.innerHTML)
                 let quantity = QUANTITY.value
@@ -76,11 +79,11 @@ document.addEventListener('DOMContentLoaded', function(){
                 let total = price*quantity
                 let inventory = INVENTORY.options[INVENTORY.selectedIndex].textContent
                 let inventoryID = INVENTORY.value
-                console.log(availableQuantity)
-                console.log(quantity)
-                console.log(parseInt(availableQuantity) < quantity)
-                console.log(KIND.value == 'sell')
-                console.log(availableQuantity < quantity && KIND.value == 'sell')
+                // console.log(availableQuantity)
+                // console.log(quantity)
+                // console.log(parseInt(availableQuantity) < quantity)
+                // console.log(KIND.value == 'sell')
+                // console.log(availableQuantity < quantity && KIND.value == 'sell')
 
                 if (availableQuantity < quantity && KIND.value == 'sell'){
                     console.log('Error')
@@ -168,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 'price' : price
             }
             // Check if items available with these quantity and in this inventory ? push to Array : make false and return from table
-            console.log(dataInfo)
+            // console.log(dataInfo)
             
 
             await fetch(`${BASE}/checkavailable`, {
@@ -183,7 +186,8 @@ document.addEventListener('DOMContentLoaded', function(){
                 }
                 else{
                     // Pop up Message Danger
-                    console.log(result.data.message)
+                    popUp(result.data.message, false)
+                    // console.log(result.data.message)
                     available = false
                 }
             })
@@ -260,83 +264,45 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     }
 
-    function displayRecommendations(element){
-        let value = encodeURIComponent(element.target.value)
-        let dropDown = element.target.parentNode.querySelector('.dropdown-menu')
-
-        if (value){
-            let table = element.target.id
-            fetch(`${BASE}/${table}/${value}`)
-            .then(response => response.json().then(data => ({'data':data, 'status':response.status})))
-            .then(result => {
-                if (result.status == 404){
-                    // Display Error
-                    console.log(result.message)
-                    return
-                }
-                result = result.data
-
-                dropDown.innerHTML = ''
-                if (result.data.length){
-                    dropDown.classList.add('show')
-                    result.data.forEach(value => {
-                        dropDown.innerHTML += `<li class="dropdown-item" data-id='${value.id}'>${value.item}</li>`
-                    })
-
-                    for (child of dropDown.children){
-                        child.addEventListener('click', e => {
-                            element.target.value = e.target.innerHTML
-                            displayItemInfo(e)
-                            dropDown.classList.remove('show')
-                        })
-                    }
-                }
-                else{
-                    dropDown.classList.remove('show')
-                }
-            })
-        }
-        else{
-            dropDown.classList.remove('show')
-        }
-
-        
-    }
-
     function displayItemInfo(element){
-        let value =  element.target.dataset?.id || element.target.value
-        if (parseInt(value)){
-            item = fetch(`${BASE}/getInfo/item/${value}`)
-            .then(response => response.json().then(data => ({'data': data, 'status': response.status})))
-            .then(result => {
-                if (result.status == 404){
-                    console.log(result.data.message)
-                    return
-                }
-                result = result.data.item
-                CODE.value = result.code
-                UNIT.value = result.unit
-                ITEM.value = result.item
-                if (KIND.value == 'purchase'){
-                    PRICE.value = result.purchasePrice
-                }
-                else{
-                    PRICE.value = result.sellPrice
-                }
-                if (INVENTORY.value){
-                    displayAvailableQuantity(result.inventories, INVENTORY.value)
-                }
-                else{
-                    AVAILABLEQUANTITY.innerHTML = result.quantity;
-                }
-                
-                return result
-            })
-        }   
+        let value =  element.dataset?.id || element.value
+        console.log(value)
+        item = fetch(`${BASE}/getInfo/item/${value}`)
+        .then(response => response.json().then(data => ({'data': data, 'status': response.status})))
+        .then(result => {
+            if (result.status == 404){
+                console.log(result.data.message)
+                return
+            }
+            result = result.data.item
+            CODE.value = result.code
+            UNIT.value = result.unit
+            ITEM.value = result.item
+            if (KIND.value == 'purchase'){
+                PRICE.value = result.purchasePrice
+            }
+            else{
+                PRICE.value = result.sellPrice
+            }
+            if (INVENTORY.value){
+                displayAvailableQuantity(result.inventories, INVENTORY.value)
+            }
+            else{
+                AVAILABLEQUANTITY.innerHTML = result.quantity;
+            }
+            
+            return result
+        })  
     }
 
     function removeRow(element){
         element.parentNode.parentNode.remove()
+        let rows = CHECKTABLE.querySelectorAll('tr')
+        // console.log(rows)
+        if (!rows.length){
+            KIND.disabled = false
+            USER.disabled = false
+        }
         calculateTotal()
     }
 
@@ -355,6 +321,8 @@ document.addEventListener('DOMContentLoaded', function(){
         let id = IDSEARCH.value
         let fromPrice = FROMPRICESEARCH.value
         let toPrice = TOPRICESEARCH.value 
+        let fromDate = FROMDATESEARCH.value
+        let toDate = TODATESEARCH.value
         let rows = ROWSPERPAGE.value
 
         // Prepare URL
@@ -366,6 +334,8 @@ document.addEventListener('DOMContentLoaded', function(){
             'id' : id,
             'fromPrice' : fromPrice,
             'toPrice' : toPrice,
+            'fromDate' : fromDate,
+            'toDate' : toDate,
             'refresh' : false
         }
         let queryParams = new URLSearchParams(data)

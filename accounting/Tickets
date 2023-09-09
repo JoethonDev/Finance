@@ -1,12 +1,11 @@
 Transactions Page :
     Fix Form
         - any rejected action pop-up Message at top of window
-        - quantity available must be valid
+        
     
     Fix CheckOut Table
-        - 'x' to delete single row
-        - clear all unlock form
-        - send multiples id of inventories [TODO] [Testing]
+        - Item is not found in the table
+        
 
     Fix Table of all rows: [Done]
         - search by date and time [TODO]
@@ -17,26 +16,31 @@ Transactions Page :
         - make purchase and sell changes [ + || - ] [Testing]
 
 Items Page :
+    form : 
+        - remove quantitylastyear
+
     overview Table :
-        - search by code
-        - get more items using row number selector
-        - move using Pagination [numbers]
-        - move using Pagination [arrows]
-        - Delete Items [Check quantity == 0] [Front & Back]
+        
 
 Categories Page :
-    overview Table :
-        - search by code
-        - Delete Category [Check all items' quantity == 0] [Back]
+    form :
+        - send id of category instead of name of it [id and not the code of the item] || if name of category not found then display error message and add it without parent category
+
 
 Invoice Page :
     print function [Control it using Js to make auto print] [maybe use django better]
 
 
 Inventory Page :
+    inventoryItem Page :
+        - form for display invetory then items depending on inventory to add quantitylastyear
+
+    transferInventory Page :
+        - form display 2 invetories, item and quantity
+
     overview Table : 
         - Delete Inventory [Balance == 0] [Front & Back] [Check no items]
 
-=> Add Pagination to all pages
-=> Use Js to retrieve new pages without refreshing
+Login Page :
 
+=> Make 5 minutes timeout to get logout

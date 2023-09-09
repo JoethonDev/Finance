@@ -1,6 +1,15 @@
 {% extends 'finance/layout.html' %}
 {% load static %}
 
+{% block style %}
+<style>
+  .dropdown-menu{
+    width: calc(100% - 2 * calc(var(--bs-gutter-x) * .5)) !important;
+  }
+
+</style>
+{% endblock %}
+
 {% block body %}
     <!-- Form Start -->
     <div class="container mb-5 mt-5">
@@ -17,38 +26,38 @@
           <input value="item" name="kind" hidden>
           <div class="col-auto dropdown" id="itemDropDown">
             <label for="item">الاصناف</label>
-            <input type="text" class="form-control category-search" aria-label="Default select example" name="categoryItem" id="item" data-id="category">
+            <input type="text" class="form-control category-search" value="{{ data.categoryItem }}" aria-label="Default select example" name="categoryItem" id="item" data-table="category" autocomplete="false">
             <ul class="dropdown-menu">
             </ul>
           </div>
           <div class="col-auto">
             <label for="nameItem">البضاعه</label>
-            <input type="text" class="form-control" id="nameItem" placeholder="" name="name">
+            <input type="text" class="form-control" value="{{ data.item }}" id="nameItem" placeholder="" name="name">
           </div>
           <div class="col-auto">
             <label for="codeItem">الكود</label>
-            <input type="text" class="form-control" id="codeItem" placeholder="" name="code">
+            <input type="text" class="form-control" value="{{ data.codeItem }}" id="codeItem" placeholder="" name="code">
           </div>
           <div class="col-auto">
             <label for="unitItem">الوحده</label>
-            <input type="text" class="form-control" id="unitItem" placeholder="" name="unit">
+            <input type="text" class="form-control" value="{{ data.unit }}" id="unitItem" placeholder="" name="unit">
           </div>
           <div class="col-auto">
             <label for="purchasePriceItem">سعر الشراء</label>
-            <input type="text" class="form-control" id="purchasePriceItem" placeholder="" name="purchasePrice">
+            <input type="text" class="form-control" value="{{ data.purchasePrice }}" id="purchasePriceItem" placeholder="" name="purchasePrice">
           </div>
           <div class="col-auto">
             <label for="sellPriceItem">سعر البيع</label>
-            <input type="text" class="form-control" id="sellPriceItem" placeholder="" name="sellPrice">
+            <input type="text" class="form-control" id="sellPriceItem" value="{{ data.sellPrice }}" placeholder="" name="sellPrice">
           </div>
           <div class="col-auto">
             <label for="quantityItem">الكميه</label>
-            <input type="text" class="form-control" id="quantityItem" placeholder="" name="quantity">
+            <input type="text" class="form-control" id="quantityItem" value="{{ data.quantity }}" placeholder="" name="quantity">
           </div>
-          <div class="col-auto">
+          <!-- <div class="col-auto">
             <label for="quantityFromLastYearItem"> كميه اول المده</label>
             <input type="text" class="form-control" id="quantityFromLastYearItem" placeholder="" name="quantityFromLastYear">
-          </div>
+          </div> -->
           <div class="col-auto btn-contianer">
             <button type="submit" class="btn btn-primary">اضافه</button>
           </div>
@@ -59,20 +68,33 @@
           <input value="category" name="kind" hidden>
           <div class="col-auto">
             <label for="nameCategory">الاسم</label>
-            <input type="text" class="form-control" id="nameCategory" value="" name="name">
+            <input type="text" class="form-control" id="nameCategory" value="{{ data.category }}" name="name">
           </div>
           <div class="col-auto">
             <label for="codeCategory">الكود</label>
-            <input type="text" class="form-control" id="codeCategory" placeholder="" name="code">
+            <input type="text" class="form-control" id="codeCategory" placeholder="" value="{{ data.codeCategory }}" name="code">
           </div>
           <div class="col-auto dropdown" id="categoryDropDown">
             <label for="category">الاصناف</label>
-            <input type="text" class="form-control category-search" aria-label="Default select example" name="category" id="category" data-id="category">
+            <input type="text" class="form-control category-search" aria-label="Default select example" value="{{ data.categoryParent }}" name="category" id="category" data-table="category">
             <ul class="dropdown-menu">
             </ul>
           </div>
           <div class="col-auto btn-contianer">
             <button type="submit" class="btn btn-primary">اضافه</button>
+          </div>
+          <div class="row mt-3">
+            <div class="col-auto d-flex justify-content-between align-items-center">
+              <input type="checkbox" name="safeMode" id="flexCheckChecked" class="form-check-input" value='True' checked>
+              <label class="form-check-label ms-3" for="flexCheckChecked">
+                وضع الامان
+              </label>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-auto d-flex justify-content-between align-items-center">
+              <h6 class="sub-title fs-6 text-muted">*تفعيل وضع الامان يحفظك من تسجيل صنف تحت مجموعه غير موجوده</h6>
+            </div>
           </div>
       </form>
     </div>
@@ -228,4 +250,5 @@
 
 {% block script %}
 <script src="{% static 'finance/items.js' %}"></script>
+<script src="{% static 'finance/generalFunctions.js' %}"></script>
 {% endblock %}

@@ -15,12 +15,37 @@
             display: flex;
             align-items: flex-end;
         }
+        .pop-up{
+          position: absolute;
+          top: 70px;
+          right: -100%;
+          animation: fade-in 10s linear;
+          z-index: 999;
+          opacity: 1;
+          min-width: 250px;
+        }
+
+        @keyframes fade-in {
+          10%{
+            right: 0;
+            opacity: 1;
+          }
+          75%{
+            opacity: 1;
+          }
+          100%{
+            right: 0;
+            opacity: 0;
+          }
+        }
     </style>
     {% block style %}
     {% endblock %}
     
 </head>
 <body>
+    
+
     <!-- Navbar start -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
@@ -47,6 +72,14 @@
 
    {% block script %}
    {% endblock %}
-
+   <!-- any messages -->
+    {% if data.message %}
+    {% if data.failed %}
+      <div class="alert pop-up alert-danger">{{ data.message }}</div>
+    {% else %}
+      <div class="alert pop-up alert-success">{{ data.message }}</div>
+    {% endif %}
+  {% endif %}
+  <!-- End messages -->
 </body>
 </html>

@@ -1,0 +1,256 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <pdf:language name=""/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير بضاعه {{ data.item }}</title>
+    <link rel="stylesheet" href="{% static 'bootstrap.rtl.min.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/fontawesome-free-6.4.2-web/fontawesome-free-6.4.2-web/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/fontawesome-free-6.4.2-web/fontawesome-free-6.4.2-web/css/solid.min.css' %}">
+    <style>
+        .w-220{
+            min-width: 220px
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 5mm auto;
+            border: 1px #D3D3D3 solid;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        
+
+        @page {
+            size: A4;
+            /* margin-top: 1000px; */
+        }
+        @media print {
+            html, body {
+                width: 210mm;
+                height: 297mm;        
+            }
+            .page {
+                margin: 0;
+                /* border: initial;
+                border-radius: initial;
+                width: initial;
+                min-height: initial;
+                box-shadow: initial;
+                background: initial; */
+                page-break-after: always;
+            }
+            
+        }
+    </style>
+
+<body>
+    <pdf:language name=""/>
+    <div class="container-fluid mt-5">
+        <div class="page">
+            <!-- Start Company Info -->
+            <div class="info-company d-flex justify-content-between">
+                <div class="contact">
+                    <h4>شركه دي اس للتجاره العالميه</h4>
+                    <h6>company ds for trading</h6>
+                    <h6>العنوان : شارع التوفيقه</h6>
+                    <h6>التليفون : 01111111111</h6>
+                </div>
+                <div class="tax-number">
+                    <h6>التليفون : 01111111111</h6>
+                    <h6>التليفون : 01111111111</h6>
+                    <h6>التليفون : 01111111111</h6>
+                </div>
+            </div>
+            <!-- End Company Info -->
+
+            <!-- Start Item Title -->
+            <div class="title text-center border border-dark border border-3 p-3 m-auto mt-5 mb-5 w-50 ">
+                <h5>تقرير بضاعه {{ data.item }}</h5>
+            </div>
+            <!-- End Item Title -->
+
+            <!-- Start overview Details -->
+            <div class="item">
+                <div class="row justify-content-between mb-4 w-220">
+                    <div class="col-auto">
+                        <h6>بضاعه : {{ data.item }}</h6>
+                    </div>
+                    <div class="col-auto">
+                        <h6>كود البضاعه : {{ data.code }}</h6>
+                    </div>
+                </div>
+                <div class="row justify-content-between mb-4 w-220">
+                    <div class="col-auto">
+                        <h6>الصنف : {{ data.category }}</h6>
+                    </div>
+                    <div class="col-auto">
+                        <h6>الوحده : {{ data.unit }}</h6>
+                    </div>
+                </div>
+                <div class="row justify-content-between mb-4 w-220">
+                    <div class="col-auto">
+                        <h6>سعر الشراء: {{ data.purchasePrice }}</h6>
+                    </div>
+                    <div class="col-auto">
+                        <h6>سعر البيع: {{ data.sellPrice }}</h6>
+                    </div>
+                </div>
+                <div class="row justify-content-between mb-4 w-220">
+                    <div class="col-auto">
+                        <h6>كميه البضاعه : {{ data.quantity }}</h6>
+                    </div>
+                    <div class="col-auto">
+                        <h6>الرصيد الكلي للبضاعه : {{ data.totalBalance }}</h6>
+                    </div>
+                </div>
+                <div class="row mb-4 w-220">
+                    <div class="col-auto">
+                        <h6>عدد المخازن الموجود بيها : {{ data.inventoriesNumber }}</h6>
+                    </div>
+                </div>
+
+            </div>
+            <!-- End overview Details -->
+
+            <!-- Start Table -->
+            <hr>
+                <div class="containerCategory mb-5 mt-5">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <div class="header">
+                            <h3>المخازن</h3>
+                        </div>
+                    </div>
+                    <table class="table table-striped">
+                        <thead>
+                            <th scope="col">اسم المخزن</th>
+                            <th scope="col">رصيد اول المده</th>
+                            <th scope="col">الكميه الحاليه</th>
+                            <th scope="col">الاجمالي</th>
+                        </thead>
+                        <tbody>
+                            {% for inventory in data.inventories %}
+                                <tr>
+                                    <td>{{ inventory.inventory }}</td>
+                                    <td>{{ inventory.quantityFromLastYear }}</td>
+                                    <td>{{ inventory.quantity }}</td>
+                                    <td>{{ inventory.balance }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            <!-- End Table -->
+        </div>
+
+        <div class="page">
+            <!-- Start Company Info -->
+            <div class="info-company d-flex justify-content-between">
+                <div class="contact">
+                    <h4>شركه دي اس للتجاره العالميه</h4>
+                    <h6>company ds for trading</h6>
+                    <h6>العنوان : شارع التوفيقه</h6>
+                    <h6>التليفون : 01111111111</h6>
+                </div>
+                <div class="tax-number">
+                    <h6>التليفون : 01111111111</h6>
+                    <h6>التليفون : 01111111111</h6>
+                    <h6>التليفون : 01111111111</h6>
+                </div>
+            </div>
+            <!-- End Company Info -->
+
+            <!-- Start Transactions Title -->
+            <div class="title p-3 mt-5 mb-5 w-50 ">
+                <h3>التحويلات</h3>
+            </div>
+            <!-- End Transactions Title -->
+
+            <div class="item">
+                <div class="row justify-content-between mb-4">
+                    <div class="col-auto">
+                        <h6>عدد التحويلات : {{ data.transactions.totalTransactions }}</h6>
+                    </div>
+                    <div class="col-auto">
+                        <h6>عدد المشتريات : {{ data.transactions.totalPurchase }}</h6>
+                    </div>
+                    <div class="col-auto">
+                        <h6>عدد المبيعات : {{ data.transactions.totalSell }}</h6>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <h6>صافي الربح : {{ data.transactions.netProfit }}</h6>
+                </div>
+                <div class="row mb-4">
+                    <h6>القيمه الاجماليه للمشتريات : {{ data.transactions.purchaseTransactions }}</h6>
+                </div>
+                <div class="row mb-4">
+                    <h6>القيمه الاجماليه للمبيعات : {{ data.transactions.sellTransactions }}</h6>
+                </div>
+
+            </div>
+            <!-- End overview Details -->
+
+            <!-- Start Table -->
+            <hr>
+            {% for type in data.transactions.transactionTypes %}
+                {% for key, val in type.items %}
+                    <div class="containerCategory mb-5 mt-5">
+                        <div class="col-12 d-flex justify-content-between align-items-center">
+                            <div class="header">
+                                <h3>{{ val }}</h3>
+                            </div>
+                        </div>
+                        <table class="table table-striped">
+                            <thead>
+                                <th scope="col">رقم الفاتوره</th>
+                                <th scope="col">العميل</th>
+                                <th scope="col">الكميه</th>
+                                <th scope="col">السعر</th>
+                                <th scope="col">الاجمالي</th>
+                                <th scope="col">التاريخ</th>
+                            </thead>
+                            <tbody>
+                                {% if key == 'purchaseTable' %}
+                                    {% for transaction in data.transactions.purchaseTable %}
+                                        <tr>
+                                            <td>{{ transaction.id }}</td>
+                                            <td>{{ transaction.client }}</td>
+                                            <td>{{ transaction.quantity }}</td>
+                                            <td>{{ transaction.price }}</td>
+                                            <td>{{ transaction.totalPrice }}</td>
+                                            <td>{{ transaction.date }}</td>
+                                        </tr>
+                                    {% endfor %}
+
+                                {% else %}
+                                    {% for transaction in data.transactions.sellTable %}
+                                        <tr>
+                                            <td>{{ transaction.id }}</td>
+                                            <td>{{ transaction.client }}</td>
+                                            <td>{{ transaction.quantity }}</td>
+                                            <td>{{ transaction.price }}</td>
+                                            <td>{{ transaction.totalPrice }}</td>
+                                            <td>{{ transaction.date }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                                    
+                            </tbody>
+                        </table>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            <!-- End Table -->
+        </div>
+    </div>
+
+</body>
+</html>

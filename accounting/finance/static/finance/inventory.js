@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Constants
-    const BASE = window.location.origin
     const NAMESEARCH = document.querySelector('#nameSearch')
     const CODESEARCH = document.querySelector('#codeSearch')
     const BTNSEARCH = document.querySelector('#btnSearch')
@@ -8,9 +7,42 @@ document.addEventListener('DOMContentLoaded', function () {
     const TABLE = document.querySelector('.table-striped tbody')
     const ARROWS = document.querySelectorAll('.arrows')
     const NUMBERS = document.querySelectorAll('.numbers')
+    const PAGESWITCH = document.querySelectorAll('input[name="pageSwitch"]')
+    const FORMS = document.querySelectorAll('form')
+    const INVENTORYNAME = document.querySelectorAll('.inventoryField')
+    const ITEM = document.querySelectorAll('.itemField')
 
     // Variables
-    
+
+    // initial setup
+    if (pageKind){
+        pageSwitch(pageKind)
+
+    }
+    removeAlerts()
+    inputSwitch()
+    INVENTORYNAME.forEach(e => {
+        getInfoByText(e)
+        e.addEventListener('keyup', () => {
+            displayRecommendations(e)
+        })
+    })
+    ITEM.forEach(e => {
+        getInfoByText(e)
+        e.addEventListener('keyup', () => {
+            displayRecommendations(e)
+        })
+    })
+
+    PAGESWITCH.forEach(element => {
+        if (element.id == pageKind){
+            element.checked = true
+        }
+        element.addEventListener('click' , e => {
+            let page = e.target.id
+            pageSwitch(page)
+        })
+    })
 
     // Search Function
     BTNSEARCH.addEventListener('click', (e) => {
@@ -104,4 +136,16 @@ document.addEventListener('DOMContentLoaded', function () {
         })
     })
 
+
+    // Functions 
+    function pageSwitch(page){
+        FORMS.forEach(form => {
+            if (form.classList.contains(page)){
+                form.classList.remove('d-none')
+            }
+            else{
+                form.classList.add('d-none')
+            }
+        })
+    }
 })

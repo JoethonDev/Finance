@@ -59,7 +59,6 @@ class Items(models.Model):
     sellPrice = models.FloatField(default=0, blank=False)
     purchasePrice = models.FloatField(default=0, blank=False)
     quantity = models.IntegerField(default=0, blank=False)
-    quantityFromLastYear = models.IntegerField(blank=True, null=True)
 
     def serialize(self):
         return {
@@ -71,7 +70,6 @@ class Items(models.Model):
             'sellPrice' : self.sellPrice,
             'purchasePrice' : self.purchasePrice,
             'quantity' : self.quantity,
-            'quantityFromLastYear' : self.quantityFromLastYear,
             'inventories' : [inventory.serializeInventories() for inventory in self.inventoriesList.all()]
         }
 
@@ -107,18 +105,22 @@ class Inventory_Items(models.Model):
     item = models.ForeignKey(Items, on_delete=models.DO_NOTHING, related_name='inventoriesList')
     inventory = models.ForeignKey(Inventories, on_delete=models.DO_NOTHING, related_name='itemsList')
     quantity = models.IntegerField(default=0, blank=False)
+    quantityFromLastYear = models.IntegerField(blank=False, default=0)
     
     def serializeItems(self):
         return {
             'item' : self.item.serialize(),
-            'quantity' : self.quantity
+            'quantity' : self.quantity,
+            'quantityFromLastYear' : self.quantityFromLastYear
         }
     
     def serializeInventories(self):
         return {
             'inventoryPK' : self.inventory.pk,
             'inventory' : self.inventory.inventory,
-            'quantity' : self.quantity
+            'quantity' : self.quantity, 
+            'quantityFromLastYear' : self.quantityFromLastYear
+
         }
 
 class Inventory_Wastes(models.Model):
@@ -148,13 +150,25 @@ class Transactions(models.Model):
     dateTime = models.DateTimeField(auto_now_add=True) 
 
     def serialize(self):
+        items = {}
+        for item in self.itemsList.all():
+            if item.item in items :
+                data = item.serialize()
+                items[item.item]['quantity'] += data['quantity']
+                items[item.item]['inventory'] += f',{data["inventory"]}'
+            else: 
+                items[item.item] = item.serialize()
+        itemsList = []
+        for val in items.values():
+            itemsList.append(val)
+
         return {
             'id' : self.pk,
             'transactionType' : self.transactionType,
             'user' : self.user,
             'tax' : self.tax,
             'totalPrice' : self.totalPrice,
-            'items' : [item.serialize() for item in self.itemsList.all()],
+            'items' : itemsList,
             'dateTime' : self.dateTime.strftime("%d/%m/%Y"),
         }
 

@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Constants
-    const BASE = window.location.origin
     const URL = window.location.href.split('/')
     const SEARCHBAR = document.querySelector('#search')
     const IDSEARCH = document.querySelector('#searchCode')
@@ -14,10 +13,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const SEARCHBTN = document.querySelector('#searchBtn')
     const CATEGORY = document.querySelectorAll('.category-search')
     const CSRTTOKEN = document.querySelector('input[name="csrfmiddlewaretoken"]').value
+    const CATEGORYITEM = document.querySelector('input[name="categoryItem"]')
+    const CATEGORYPARENT = document.querySelector('input[name="category"]')
 
     PAGESWITCH.forEach(element => {
         element.addEventListener('click', (e)=> {
-            id  =  e.target.id
+            let id  =  e.target.id
             pageSwitch(id)
         })
     })
@@ -40,8 +41,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let pagesCountCategory = 1
 
     // Initial settings
-    pageSwitch(URL[URL.length - 1])
+    removeAlerts()
+    inputSwitch()
+    console.log(URL[URL.length - 1].split('?')[0])
+    pageSwitch(URL[URL.length - 1].split('?')[0])
     document.querySelector(`input[name="pageSwitch"][id="${URL[URL.length - 1].split('?')[0]}"]`).checked = true
+    getInfoByText(CATEGORYITEM, displayCategoryInfo)
+    getInfoByText(CATEGORYPARENT, displayCategoryInfo)
+
+
     // document.querySelector('select[name="categoryItem"]').addEventListener('change', (e) => {
     //     let value = e.target.value
     //     fetch(`${BASE}/getInfo/category/${value}`)
@@ -57,10 +65,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     CATEGORY.forEach(element => {
         element.addEventListener('keyup', e => {
-            displayRecommendations(e)
+            displayRecommendations(element, displayCategoryInfo)
         })
         element.addEventListener('change', e => {
-            displayCategoryInfo(e)
+            displayCategoryInfo(element)
         })
     })
 
@@ -122,71 +130,84 @@ document.addEventListener('DOMContentLoaded', function() {
     })
 
     // Functions
-    function displayRecommendations(element){
-        let value = encodeURIComponent(element.target.value)
-        let dropDown = element.target.parentNode.querySelector('.dropdown-menu')
+    // function displayRecommendations(element, func){
+    //     let value = encodeURIComponent(element.value)
+    //     let dropDown = element.parentNode.querySelector('.dropdown-menu')
 
-        if (value){
-            let table = element.target.dataset.id
-            fetch(`${BASE}/${table}/${value}`)
-            .then(response => response.json().then(data => ({'data':data, 'status':response.status})))
-            .then(result => {
-                if (result.status == 404){
-                    // Display Error
-                    console.log(result.message)
-                    return
-                }
-                result = result.data
 
-                dropDown.innerHTML = ''
-                if (result.data.length){
-                    dropDown.classList.add('show')
-                    result.data.forEach(value => {
-                        dropDown.innerHTML += `<li class="dropdown-item" data-id='${value.id}'>${value.category}</li>`
-                    })
+    //     if (value){
+    //         let table = element.dataset.table
+    //         fetch(`${BASE}/${table}/${value}`)
+    //         .then(response => response.json().then(data => ({'data':data, 'status':response.status})))
+    //         .then(result => {
+    //             // console.log(result)
+    //             if (result.status == 404){
+    //                 // Display Error
+    //                 console.log(result.message)
+    //                 return
+    //             }
+    //             result = result.data
 
-                    for (child of dropDown.children){
-                        child.addEventListener('click', e => {
-                            element.target.value = e.target.innerHTML
-                            displayCategoryInfo(e)
-                            dropDown.classList.remove('show')
-                        })
-                    }
-                }
-                else{
-                    dropDown.classList.remove('show')
-                }
-            })
-        }
-        else{
-            dropDown.classList.remove('show')
-        }
+    //             dropDown.innerHTML = ''
+    //             if (result.data.length){
+    //                 dropDown.classList.add('show')
+    //                 result.data.forEach(value => {
+    //                     dropDown.innerHTML += `<li class="dropdown-item" data-id='${value.id}'>${value.category}</li>`
+    //                 })
+
+    //                 for (child of dropDown.children){
+    //                     child.addEventListener('click', e => {
+    //                         element.value = e.target.innerHTML
+    //                         if (func){
+    //                             func(e.target)
+    //                         }
+    //                     })
+    //                 }
+    //             }
+    //             else{
+    //                 dropDown.classList.remove('show')
+    //             }
+    //         })
+    //     }
+    //     else{
+    //         dropDown.classList.remove('show')
+    //     }
 
         
-    }
+    // }
 
     function displayCategoryInfo(element){
-        let value =  element.target.dataset?.id || element.target.value
-        if (parseInt(value)){
-            item = fetch(`${BASE}/getInfo/category/${value}`)
-            .then(response => response.json().then(data => ({'data': data, 'status': response.status})))
-            .then(result => {
-                if (result.status == 404){
-                    console.log(result.data.message)
-                    return
-                }
-                result = result.data.category
-                document.querySelectorAll('input[name="code"]').forEach(e => {
-                    e.value =  result.code
-                })
-                
+        let value =  element.dataset?.id || element.value
+        // console.log(element)
+        item = fetch(`${BASE}/getInfo/category/${value}`)
+        .then(response => response.json().then(data => ({'data': data, 'status': response.status})))
+        .then(result => {
+            if (result.status == 404){
+                console.log(result.data.message)
                 return result
-            })
-        }   
+            }
+            result = result.data.category
+            let parent = null
+            let currentElement = element
+            while(currentElement){
+                if (currentElement.tagName.toLowerCase() == 'form'){
+                    parent = currentElement
+                    break
+                }
+                currentElement = currentElement.parentElement
+
+            }
+            parent.querySelector('input[name="code"]').value =  result.code
+            if (element.parentNode.classList.contains('show')){
+                element.parentNode.classList.remove('show')
+            }
+            return result
+        })  
     }
 
     function pageSwitch(page){
         kind = page
+        window.history.pushState(null, '', `${kind}`)
         if (page == 'categories'){
             CATEGORYPAGE.forEach(e => {
                 e.classList.remove('d-none')

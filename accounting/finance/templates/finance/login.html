@@ -1,0 +1,43 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'bootstrap.rtl.min.css' %}" rel="stylesheet">
+    <title>تسجيل الدخول</title>
+    <style>
+        form{
+            width: 25%;
+            margin: auto;
+            margin-top: 100px;
+            text-align: right;
+
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if message %}
+            <div class="alert alert-danger" role="alert">
+                {{ message }}
+            </div>
+        {% endif %}
+        <form action="{% url 'loginView' %}" method="post">
+            {% csrf_token %}
+            <div class="mb-3 row">
+                <label for="name" class="form-label">اسم المستخدم </label>
+                <input type="text" class="form-control" id="name" placeholder="اسم المستخدم" name="username">
+              </div>
+              <div class="mb-3 row">
+                <label for="password" class="form-label">كلمه المرور </label>
+                <input type="password" class="form-control" id="password" placeholder="***********" name="password">
+              </div>
+              <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">تسجيل الدخول</button>
+              </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -70,7 +70,7 @@
             </div>
             <div class="col-auto dropdown" id="itemDropDown">
               <label for="item">البضاعه</label>
-              <input type="text" class="form-control" aria-label="Default select example" name="item" id="item">
+              <input type="text" class="form-control" aria-label="Default select example" name="item" id="item" data-table="item">
               <ul class="dropdown-menu">
               </ul>
             </div>
@@ -112,7 +112,7 @@
             </div> -->
             <div class="col-auto">
               <label for="user">العميل</label>
-              <input type="text" class="form-control" id="user" placeholder="" name="user">
+              <input type="text" class="form-control" id="user" placeholder="" name="user" data-table="user">
               <ul class="dropdown-menu">
               </ul>
             </div>
@@ -203,6 +203,16 @@
             <div class="col-auto">
               <label for="toPriceSearch">الي اجمالي</label>
               <input class="form-control me-2 mb-5" type="search" placeholder="الي..." aria-label="Search" id="toPriceSearch">
+            </div>
+
+            <div class="col-auto">
+              <label for="fromDateSearch">من تاريخ</label>
+              <input class="form-control me-2 mb-5 " type="date" id="fromDateSearch">
+            </div>
+
+            <div class="col-auto">
+              <label for="toDateSearch">الي تاريخ</label>
+              <input class="form-control me-2 mb-5 " type="date" id="toDateSearch">
             </div>
   
   
@@ -339,4 +349,8 @@
 
 {% block script %}
   <script src="{% static 'finance/transactions.js' %}"></script>
+  <script src="{% static 'finance/generalFunctions.js' %}"></script>
+  <script>
+    const input = document.querySelector("input[type=date]");
+  </script>
 {% endblock %}
