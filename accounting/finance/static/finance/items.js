@@ -295,12 +295,14 @@ document.addEventListener('DOMContentLoaded', function() {
                       <th scope="row">${ value.code }</th>
                       <td class="name">${ value.item }</td>
                       <td class="quantity">${ value.quantity }</td>
-                      <td> ${ value.unit } </td>
+                      <td>${ value.unit } </td>
                       <td>${ value.category }</td>
                       <td>${ value.purchasePrice }</td>
                       <td>${ value.sellPrice }</td>
                       <td>
-                          <button type="button" class="btn btn-light report" data-id="${ value.id }">تقرير</button>
+                          <button type="button" class="btn btn-light report" data-id="${ value.id }">
+                            <a href="${value.reportLink}">تقرير</a>
+                          </button>
                       </td>
                       <td>
                           <button type="button" class="btn btn-danger delete" data-id="${ value.id }">حذف</button>

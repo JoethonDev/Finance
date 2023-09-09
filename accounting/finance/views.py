@@ -351,7 +351,10 @@ def items(request):
         if kind == 'items' or kind == 'item':
             items = Items.objects.filter(**kwrags).order_by('item')
             currentPageItems, rowsPerPageItems = paginateRows(request, items)
-            itemsRows = [items.serialize() for items in currentPageItems]
+            for items in currentPageItems :
+                item = items.serialize()
+                item['reportLink']  = reverse('itemReport', kwargs={'id' : item['id']})
+                itemsRows.append(item)
             rows = rowsPerPageItems
         else : 
             categories = ItemsCategories.objects.filter(**kwrags).order_by('category')
