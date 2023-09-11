@@ -1,0 +1,259 @@
+{% extends 'finance/layout.html' %}
+{% load static %}
+
+{% block style %}
+<style>
+  .pageContainer{
+    width: 50%;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+    <!-- Form Start -->
+    <div class="container mb-5 mt-5">
+      <div class="btn-group mb-4" role="group" aria-label="Basic radio toggle button group">
+        <input type="radio" class="btn-check" name="pageSwitch" id="addInventory" checked>
+        <label class="btn btn-outline-primary" for="addInventory">اضافه مخزن</label>
+      
+        <input type="radio" class="btn-check" name="pageSwitch" id="addItem">
+        <label class="btn btn-outline-primary" for="addItem">اضافه بضاعه للمخزن</label>
+
+        <!-- <input type="radio" class="btn-check" name="pageSwitch" id="transferItem">
+        <label class="btn btn-outline-primary" for="transferItem">تحويل بضاعه من المخزن</label> -->
+
+        <input type="radio" class="btn-check" name="pageSwitch" id="checkItem">
+        <label class="btn btn-outline-primary" for="checkItem">بحث بضاعه في المخزن</label>
+      </div>
+
+      <form class="row g-3 addInventory" method="post">
+          {% csrf_token %}
+          <div class="col-auto">
+            <label for="name">الاسم</label>
+            <input type="text" class="form-control" id="name" value="" name="name">
+          </div>
+          <div class="col-auto">
+            <label for="place">المكان</label>
+            <input type="text" class="form-control" id="place" placeholder="" name="place">
+          </div>
+          <div class="col-auto">
+            <label for="balance">الرصيد</label>
+            <input type="text" class="form-control" id="balance" placeholder="" name="balance">
+          </div>
+          <div class="col-auto btn-contianer">
+            <button type="submit" class="btn btn-primary">اضافه</button>
+          </div>
+      </form>
+
+
+      <form class="row g-3 addItem d-none" method="post" action="{% url 'addItemInventory' %}">
+          {% csrf_token %}
+          <div class="col-auto dropdown" id="inventoryDropDown">
+            <label for="inventoryName">المخزن</label>
+            <input type="text" class="form-control inventoryField" id="inventoryName" value="{{ data.inventory }}" name="inventoryName" data-table="inventory" >
+            <ul class="dropdown-menu">
+            </ul>
+          </div>
+          <div class="col-auto dropdown" id="itemDropDown">
+            <label for="itemAdd">البضاعه</label>
+            <input type="text" class="form-control category-search itemField" value="{{ data.itemName }}" aria-label="Default select example" name="itemAdd" id="itemAdd" data-table="item" autocomplete="false" >
+            <ul class="dropdown-menu">
+            </ul>
+          </div>
+          <div class="col-auto">
+            <label for="itemCodeAdd">الكود البضاعه</label>
+            <input type="text" class="form-control" id="itemCodeAdd" value="{{ data.itemCode }}" placeholder="" name="itemCodeAdd">
+          </div>
+          <div class="col-auto">
+            <label for="quantityFromLastYear">الكميه</label>
+            <input type="text" class="form-control" id="quantityFromLastYear" value="{{ data.quantity }}" placeholder="" name="quantityFromLastYear">
+          </div>
+          <div class="col-auto btn-contianer">
+            <button type="submit" class="btn btn-primary">اضافه</button>
+          </div>
+      </form>
+
+
+      <form class="row g-3 transferItem d-none" method="post">
+          {% csrf_token %}
+          <h6 class="text-muted availableQuantity">الكميه المتاحه : <span>0</span></h6>
+
+          <div class="col-auto">
+            <label for="name">الاسم</label>
+            <input type="text" class="form-control" id="name" value="" name="name">
+          </div>
+          <div class="col-auto">
+            <label for="place">المكان</label>
+            <input type="text" class="form-control" id="place" placeholder="" name="place">
+          </div>
+          <div class="col-auto">
+            <label for="balance">الرصيد</label>
+            <input type="text" class="form-control" id="balance" placeholder="" name="balance">
+          </div>
+          <div class="col-auto btn-contianer">
+            <button type="submit" class="btn btn-primary">اضافه</button>
+          </div>
+      </form>
+
+      <form class="row g-3 checkItem d-none" method="get" action="{% url 'searchItemInventory' %}">
+          <div class="row mb-4">
+            <div class="col-auto">
+              <label for="itemSearch">البضاعه</label>
+              <input type="text" class="form-control category-search itemField" value="{{ data.itemNameSearch }}" aria-label="Default select example" name="itemSearch" id="itemSearch" data-table="item" autocomplete="false" >
+              <ul class="dropdown-menu">
+              </ul>
+            </div>
+            <div class="col-auto">
+              <label for="inventoryNameSearch">المخزن</label>
+              <input type="text" class="form-control inventoryField" id="inventoryNameSearch" value="{{ data.inventoryNameSearch }}" name="inventoryName" data-table="inventory" >
+              <ul class="dropdown-menu">
+              </ul>
+            </div>
+            <div class="col-auto btn-contianer">
+              <button type="submit" class="btn btn-primary">بحث</button>
+            </div>
+          </div>
+          <div class="row mb-4">
+            <div class="availableSearch w-25">
+              <label for="availableSearch">التوفر</label>
+              <input type="text" class="form-control" id="availableSearch" value="{{ data.availableSearch }}" name="availableSearch" disabled>
+            </div>
+          </div>
+          <div class="row mb-4">
+            <div class="quantityItemSearch w-25">
+              <label for="quantitySearch">الكميه</label>
+              <input type="text" class="form-control" id="quantitySearch" value="{{ data.quantitySearch }}" name="quantitySearch" disabled>
+            </div>
+          </div>
+      </form>
+    </div>
+    <!-- Form End -->
+
+
+    <!-- Table Start -->
+    <div class="container rounded border p-5">
+      <div class="navTable d-flex justify-content-space-between">
+        <div class="col-10">
+          <form class="d-flex mb-2" role="search">
+            <div class="col-auto me-3">
+              <label for="nameSearch">الاسم</label>
+              <input class="form-control" type="search" placeholder="بحث بالاسم..." aria-label="Search" id="nameSearch" value="{{ name }}">
+            </div>
+            <div class="col-auto me-3">
+              <label for="codeSearch">الكود</label>
+              <input class="form-control" type="search" placeholder="بحث بالكود..." aria-label="Search" id="codeSearch" value="{{ id }}">
+            </div>
+            <div class="col-auto btn-contianer">
+              <button type="submit" class="btn btn-primary" id="btnSearch">بحث</button>
+            </div>
+          </form>
+        </div>
+        <div class="col-1">
+          <select class="form-select" aria-label="Default select example" id="rowsPerPage">
+            {% for value in rowsOptions %}
+              {% if value == rows %}
+                <option value="{{ value }}" selected>{{ value }}</option>
+              {% else %}
+                <option value="{{ value }}">{{ value }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+       
+        <table class="table table-striped">
+            <thead>
+              <tr>
+                  <th scope="col">الكود</th>
+                  <th scope="col">الاسم</th>
+                  <th scope="col">المكان</th>
+                  <th scope="col">الرصيد</th>
+                  <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for inventory in inventories %}
+                    <tr>
+                        <th scope="row">{{ inventory.id }}</th>
+                        <td>{{ inventory.inventory }}</td>
+                        <td>{{ inventory.place }}</td>
+                        <td> {{ inventory.balance }} </td>
+                        <td>
+                            <button type="button" class="btn btn-light" data-id="{{ inventory.id }}">
+                              <a href="{% url 'inventoryReport' inventory.id %}">تقرير</a>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+          </table>
+          <nav aria-label="Page navigation example" class="pageContainer">
+            <ul class="pagination">
+              {% if not inventories.has_previous %}
+                <li class="page-item disabled arrows previous">
+                  <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item arrows previous">
+                  <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% for page in inventories.paginator.page_range %}
+                
+                {% if page == inventories.number %}
+                  <li class="page-item numbers active" data-id="{{ page }}">
+                    <a class="page-link">
+                      <span aria-hidden="true">{{ page }}</span>
+                    </a>
+                  </li>
+                {% else %}
+                  <li class="page-item numbers" data-id="{{ page }}">
+                    <a class="page-link">
+                      <span aria-hidden="true">{{ page }}</span>
+                    </a>
+                  </li>
+                {% endif %}
+
+              {% endfor %}
+
+              {% if not inventories.has_next %}
+                <li class="page-item arrows next disabled">
+                  <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+            {% else %}
+              <li class="page-item arrows next">
+                <a class="page-link" href="#" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            {% endif %}
+              
+            </ul>
+          </nav>
+    </div>
+    <!-- Table End -->
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'finance/inventory.js' %}"></script>
+    <script src="{% static 'finance/generalFunctions.js' %}"></script>
+
+    <script>
+        // Variables
+        let currentPage = {{ inventories.number }}
+        let hasPrevious = {{ inventories.has_previous|lower  }}
+        let hasNext = {{ inventories.has_next|lower  }}
+        let rowsPerPage = {{ rows }}
+        let pageKind = '{{ data.kind }}'
+    </script>
+{% endblock %}

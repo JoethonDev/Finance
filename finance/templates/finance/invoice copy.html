@@ -1,0 +1,154 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <pdf:language name=""/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    <link rel="stylesheet" href="{% static 'finance/bootstrap.rtl.min.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/solid.min.css' %}">
+    <style>
+        /* *{
+            font-family: 'Times New Roman', Times, serif !important;
+        } */
+        /* .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 10mm auto;
+            border: 1px #D3D3D3 solid;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        } */
+        
+
+        /* @page {
+            size: A4;
+            margin-top: 100px;
+        } */
+        /* @media print {
+            html, body {
+                width: 210mm;
+                height: 297mm;        
+            }
+            .page {
+                margin: 0;
+                border: initial;
+                border-radius: initial;
+                width: initial;
+                min-height: initial;
+                box-shadow: initial;
+                background: initial;
+                page-break-after: always;
+            }
+            
+        } */
+    </style>
+
+<body>
+    <pdf:language name=""/>
+    <div class="container-fluid mt-5">
+        <div class="page">
+            <!-- Start Company Info -->
+            <div class="info-company d-flex justify-content-between">
+                <div class="contact">
+                    <h4>شركه دي اس للتجاره العالميه</h4>
+                    <h6>company ds for trading</h6>
+                    <h6>العنوان : شارع التوفيقه</h6>
+                    <h6>التليفون : 01111111111</h6>
+                </div>
+                <div class="tax-number">
+                    <h6>التليفون : 01111111111</h6>
+                    <h6>التليفون : 01111111111</h6>
+                    <h6>التليفون : 01111111111</h6>
+                </div>
+            </div>
+            <!-- End Company Info -->
+
+            <!-- Start Invoice Title -->
+            <div class="title text-center border border-dark border border-3 p-3 m-auto mt-5 mb-5 w-25 ">
+                <h5>فاتوره {{ transaction.transactionType }}</h5>
+            </div>
+            <!-- End Invoice Title -->
+
+            <!-- Start Invoice Details -->
+            <div class="invoice-details">
+                <div class="row justify-content-between">
+                    <div class="col-auto invoice-number">
+                        <h6>رقم الفاتوره : {{ transaction.id }}</h6>
+                    </div>
+                    <div class="col-auto date">
+                        <h6>التاريخ : {{ transaction.dateTime }}</h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <h6>الخزينه : 
+                        {% for inventory in transaction.inventories %}    
+                            {{ inventory }}
+                            {% if not forloop.last %}
+                            ,
+                            {% endif %}
+                        {% endfor %}
+                    </h6>
+                </div>
+                <div class="row">
+                    <h6>العميل :  {{ transaction.user }}</h6>
+                </div>
+            </div>
+            <!-- End Invoice Details -->
+
+            <!-- Start Table -->
+            <table class="table table-striped">
+                <thead>
+                    <th scope="col">اسم الصنف</th>
+                    <th scope="col">رقم الصنف</th>
+                    <th scope="col">الوحده</th>
+                    <th scope="col">الكميه</th>
+                    <th scope="col">السعر</th>
+                    <th scope="col">الاجمالي</th>
+                </thead>
+                <tbody>
+                    {% for item in transaction.items %}
+                        <tr>
+                            <td>{{ item.item.item }}</td>
+                            <td>{{ item.item.code }}</td>
+                            <td>{{ item.item.unit }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.pricePerItem }}</td>
+                            <td>{{ item.total }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- End Table -->
+
+            <!-- Start Total -->
+            <div class="total">
+                <div class="row totalBeforeTax mb-3">
+                    <label for="totalBeforeTax" class="col-4 col-form-label">الاجمالي قبل الضرائب</label>
+                    <div class="col-4">
+                        <input type="text" class="form-control" id="totalBeforeTax" disabled value="{{ transaction.totalBeforeTax }}">
+                    </div>
+                </div>
+                <div class="row tax mb-3">
+                    <label for="tax" class="col-4 col-form-label">الضرائب</label>
+                    <div class="col-4">
+                        <input type="text" class="form-control" id="tax" disabled value="{{ transaction.tax }}">
+                    </div>
+                </div>
+                <div class="row totalAfterTax mb-3">
+                    <label for="totalAfterTax" class="col-4 col-form-label">الاجمالي بعد الضرائب</label>
+                    <div class="col-4">
+                        <input type="text" class="form-control" id="totalAfterTax" disabled value="{{ transaction.totalPrice }}">
+                    </div>
+                </div>
+            </div>
+            <!-- End Total -->
+        </div>
+    </div>
+</body>
+</html>

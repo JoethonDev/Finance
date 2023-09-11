@@ -1,0 +1,356 @@
+{% extends 'finance/layout.html' %}
+{% load static %}
+
+{% block style %}
+  <style>
+    button a{
+      font-style: none;
+      font-size: inherit;
+      color: inherit;
+      text-decoration: none;
+    }
+    .btn-contianer{
+        display: flex;
+        align-items: end;
+    }
+
+    .checkoutTable{
+      max-height: 475px;
+    }
+
+    .table-borderless thead tr{
+      border-bottom-width: 1px;
+    }
+
+    .dropdown-menu{
+      width: calc(100% - 2 * calc(var(--bs-gutter-x) * .5));
+    }
+
+    .fa-xmark:hover{
+      color: red;
+      cursor: pointer;
+      transition: 0.5s;
+    }
+
+    
+    #searchBtn{
+      margin-top: 24px;
+    }
+
+    .pagination{
+      flex-wrap: wrap;
+
+    }
+
+    .pagination li {
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+
+  </style>
+{% endblock %}
+   
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.1/css/bootstrap.rtl.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
+{% block body %}
+    <!-- Form Start -->
+    <div class="container mb-5 mt-5">
+      <div class="row">
+
+        <div class="col-7">
+          <form class="row g-3 mb-4" method="post">
+            {% csrf_token %}
+            <input value="purchase" name="kind" hidden>
+            <div class="col-auto">
+              <label for="itemPurchase">العمليه</label>
+              <select class="form-select" aria-label="Default select example" name="kind" id="kind">
+                <option selected disabled value="">--العمليه--</option>
+                <option value="purchase">مشتريات</option>
+                <option value="sell">مبيعات</option>
+              </select>
+            </div>
+            <div class="col-auto dropdown" id="itemDropDown">
+              <label for="item">البضاعه</label>
+              <input type="text" class="form-control" aria-label="Default select example" name="item" id="item" data-table="item">
+              <ul class="dropdown-menu">
+              </ul>
+            </div>
+            <div class="col-auto">
+              <label for="code">الكود</label>
+              <input type="text" class="form-control" id="code" placeholder="" name="code">
+            </div>
+            <div class="col-auto">
+              <label for="inventory">المخزن</label>
+              <select class="form-select" name="inventory" id="inventory">
+                <option selected disabled value="">--المخزن--</option>
+                {% for inventory in inventories %}
+                  <option value="{{ inventory.id }}">{{ inventory.inventory }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-auto">
+              <label for="unit">الوحده</label>
+              <input type="text" class="form-control" id="unit" placeholder="" name="unit" disabled>
+            </div>
+            <div class="col-auto">
+              <label for="price">سعر</label>
+              <input type="text" class="form-control" id="price" placeholder="" name="price">
+            </div>
+            <div class="col-auto">
+              <label for="quantity">الكميه</label>
+              <input type="text" class="form-control" id="quantity" placeholder="" name="quantity">
+              <h6 class="text-muted availableQuantity">الكميه المتاحه : <span>0</span></h6>
+            </div>
+            <!-- Users will be in Select not Input -->
+            <!-- <div class="col-auto">
+              <label for="userPurchase">العميل</label>
+              <select class="form-select" name="userPurchase" id="userPurchase">
+                <option selected disabled>--المخزن--</option>
+                {% for user in users %}
+                  <option value="{{ user.id }}">{{ user.name }}</option>
+                {% endfor %}
+              </select>
+            </div> -->
+            <div class="col-auto">
+              <label for="user">العميل</label>
+              <input type="text" class="form-control" id="user" placeholder="" name="user" data-table="user">
+              <ul class="dropdown-menu">
+              </ul>
+            </div>
+            <div class="col-auto btn-contianer">
+              <button type="submit" class="btn btn-primary">اضافه</button>
+            </div>
+          </form>
+
+          <div class="row">
+            <div class="col mb-4 w-25">
+              <label for="totalBeforeTax">الاجمالي بدون الضرايب</label>
+              <input type="text" class="form-control" id="totalBeforeTax" placeholder="" name="totalBeforeTax" disabled value=0>
+            </div>
+            <div class="col mb-4 w-25">
+              <label for="tax">الضرايب</label>
+              <input type="text" class="form-control" id="tax" placeholder="" name="tax" disabled value=0>
+            </div>
+            <div class="col mb-4 w-25">
+              <label for="totalAfterTax">الاجمالي بعد الضرايب</label>
+              <input type="text" class="form-control" id="totalAfterTax" placeholder="" name="totalAfterTax" disabled value=0> 
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-auto btn-contianer">
+              <button type="submit" class="btn btn-primary" id="addTransaction"> اضافه فاتوره</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-5 checkoutTable">
+          <div class=" rounded border p-2 mb-3 mh-100 overflow-auto">
+            <table class="table table-borderless ">
+              <thead>
+                <tr>
+                    <th scope="col">الكود</th>
+                    <th scope="col">البضاعه</th>
+                    <th scope="col">الوحده</th>
+                    <th scope="col">كميه</th>
+                    <th scope="col">سعر</th>
+                    <th scope="col">المخزن</th>
+                    <th scope="col">الاجمالي</th>
+                    <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn btn-danger" id="clearAll">حذف الكل</button>
+        </div>
+
+      </div>
+     
+    </div>
+    <!-- Form End -->
+
+
+    <!-- Table Start -->
+    <div class="container rounded border p-5">
+        <div class="row g-3 mb-4" role="search">
+          <div class="col-10 row">
+            <div class="col-auto">
+              <label for="transactionSearch">العمليه</label>
+              <select name="transactionSearch" id="transactionSearch" class="form-select">
+                <option value="all" selected>الكل</option>
+                <option value="purchase">المشتريات</option>
+                <option value="sell">المبيعات</option>
+              </select>
+            </div>
+  
+            <div class="col-auto">
+              <label for="usernameSearch">العميل</label>
+              <input class="form-control me-2 mb-5" type="search" placeholder="بحث بالعميل" aria-label="Search" id="usernameSearch">
+            </div>
+  
+            <div class="col-auto">
+              <label for="idSearch">رقم الفاتوره</label>
+              <input class="form-control me-2 mb-5" type="search" placeholder="بحث برقم الفاتوره..." aria-label="Search" id="idSearch">
+            </div>
+  
+            <div class="col-auto">
+              <label for="fromPriceSearch">من اجمالي</label>
+              <input class="form-control me-2  mb-5" type="search" placeholder="من..." aria-label="Search" id="fromPriceSearch">
+            </div>
+  
+            <div class="col-auto">
+              <label for="toPriceSearch">الي اجمالي</label>
+              <input class="form-control me-2 mb-5" type="search" placeholder="الي..." aria-label="Search" id="toPriceSearch">
+            </div>
+
+            <div class="col-auto">
+              <label for="fromDateSearch">من تاريخ</label>
+              <input class="form-control me-2 mb-5 " type="date" id="fromDateSearch">
+            </div>
+
+            <div class="col-auto">
+              <label for="toDateSearch">الي تاريخ</label>
+              <input class="form-control me-2 mb-5 " type="date" id="toDateSearch">
+            </div>
+  
+  
+            <!-- <div class="col-auto">
+              <label for="fromDateSearch"></label>
+              <input class="form-control me-2 w-25 mb-5" type="search" placeholder="بحث..." aria-label="Search" id="fromDateSearch">
+              <label for="toDateSearch"></label>
+              <input class="form-control me-2 w-25 mb-5" type="search" placeholder="بحث..." aria-label="Search" id="toDateSearch">
+            </div> -->
+  
+            <div class="col-auto btn-contianer align-items-start">
+              <button type="submit" class="btn btn-primary" id="searchBtn">بحث</button>
+            </div>  
+          </div>
+
+          <div class="col-1">
+            <select class="form-select" aria-label="Default select example" id="rowsPerPage">
+              {% for value in rowsOptions %}
+                {% if value == rows %}
+                  <option value="{{ value }}" selected>{{ value }}</option>
+                {% else %}
+                  <option value="{{ value }}">{{ value }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+        </div>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+                <th scope="col">العمليه</th>
+                <th scope="col">رقم الفاتوره</th>
+                <th scope="col">العميل</th>
+                <th scope="col">البضاعه</th>
+                <th scope="col">المخزن</th>
+                <th scope="col">الاجمالي</th>
+                <th scope="col">التاريخ</th>
+                <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transaction in transactions %}
+              <tr>
+                  {% if transaction.transactionType == 'purchase' %}
+                    <th scope="row">المشتريات</th>
+                  {% else %}
+                    <th scope="row">المبيعات</th>
+                  {% endif %}
+                  <td class="id">{{ transaction.id }}</td>
+                  <td class="username">{{ transaction.user }}</td>
+                  <td class="items"> 
+                    {% for item in transaction.items %}
+                      {{ item.item.item }}
+                      {% if not forloop.last %}
+                      ,
+                      {% endif %}
+                    {% endfor %}
+                  </td>
+                  <td class="inventory">
+                    {% for item in transaction.items %}
+                      {{ item.inventory }}
+                      {% if not forloop.last %}
+                      ,
+                      {% endif %}
+                    {% endfor %}
+                </td>
+                  <td class="price">{{ transaction.totalPrice }}</td>
+                  <td class="date"> {{ transaction.dateTime }} </td>
+                  <td>
+                      <button type="button" class="btn btn-light report" data-id="{{ transaction.id }}">
+                        <a href="{% url 'invoice'  transaction.id  %}">تقرير</a>
+                      </button>
+                  </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <nav aria-label="Page navigation example" class="pageContainer">
+          <ul class="pagination">
+            {% if not currentPage.has_previous %}
+              <li class="page-item disabled arrows previous">
+                <a class="page-link" href="#" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item arrows previous">
+                <a class="page-link" href="#" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+            {% endif %}
+
+            {% for page in currentPage.paginator.page_range %}
+              
+              {% if page == currentPage.number %}
+                <li class="page-item numbers active" data-id="{{ page }}">
+                  <a class="page-link">
+                    <span aria-hidden="true">{{ page }}</span>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item numbers" data-id="{{ page }}">
+                  <a class="page-link">
+                    <span aria-hidden="true">{{ page }}</span>
+                  </a>
+                </li>
+              {% endif %}
+
+            {% endfor %}
+
+            {% if not currentPage.has_next %}
+              <li class="page-item arrows next disabled">
+                <a class="page-link" href="#" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+          {% else %}
+            <li class="page-item arrows next">
+              <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          {% endif %}
+            
+          </ul>
+        </nav>
+
+    </div>
+    <!-- Table End -->
+{% endblock %}
+
+{% block script %}
+  <script src="{% static 'finance/transactions.js' %}"></script>
+  <script src="{% static 'finance/generalFunctions.js' %}"></script>
+  <script>
+    const input = document.querySelector("input[type=date]");
+  </script>
+{% endblock %}
