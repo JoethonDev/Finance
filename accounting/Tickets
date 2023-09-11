@@ -1,6 +1,10 @@
 Transactions Page :
     Fix Form
         - any rejected action pop-up Message at top of window
+        - change client to provider (vice versa) depending on type
+        - do not put taxes in purchase
+        - maybe put tax or not for selling 
+        - safe mode wanna change price depending on purchase || sell price
         
     
     Fix CheckOut Table
@@ -18,6 +22,8 @@ Transactions Page :
 Items Page :
     form : 
         - remove quantitylastyear
+        - remove quantity
+        - change labels of item and category
 
     overview Table :
         
@@ -40,7 +46,13 @@ Inventory Page :
 
     overview Table : 
         - Delete Inventory [Balance == 0] [Front & Back] [Check no items]
+        - Display Quantity instead of Price
 
 Login Page :
 
 => Make 5 minutes timeout to get logout
+=> Search Database for Django
+=> Can django link to online database ? Which?
+=> when hosting django project what database is used?
+=> good practices
+=> Hostings for Django
