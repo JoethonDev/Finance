@@ -146,7 +146,12 @@ def inventory(request):
 
         # Retrieve Data
         inventories = Inventories.objects.filter(**krwags).order_by('id')
+
         currentPage, rowsNumber = paginateRows(request, inventories)
+        for item in currentPage:
+            item.balance = 0
+            for quantity in item.itemsList.all():
+                item.balance += quantity.quantity
         # inventoryPaginator = Paginator(inventories, rowsNumber)
         # currentPage = inventoryPaginator.get_page(pageNumber)
 

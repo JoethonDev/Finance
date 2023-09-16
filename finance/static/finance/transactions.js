@@ -2,16 +2,20 @@ document.addEventListener('DOMContentLoaded', function(){
     // Constants
     const KIND = document.querySelector('#kind')
     const USER = document.querySelector('#user')
+    const USERLABEL = document.querySelector('#userLabel')
     const ITEM = document.querySelector('#item')
     const CODE = document.querySelector('#code')
     const UNIT = document.querySelector('#unit')
     const PRICE = document.querySelector('#price')
     const INVENTORY = document.querySelector('#inventory')
     const QUANTITY = document.querySelector('#quantity')
+    const TAXFIELD = document.querySelector('#taxes')
+    const TAXBUTTON = document.querySelector('#taxActivated')
     const AVAILABLEQUANTITY = document.querySelector('.availableQuantity span')
     const CHECKTABLE = document.querySelector('.checkoutTable table tbody')
     const CLEARBUTTON = document.querySelector('#clearAll')
     const FORM = document.querySelector('form')
+    const CHANGEPRICE = document.querySelector('#changePrice')
     const TOTALBEFORETAX = document.querySelector('#totalBeforeTax')
     const TAX = document.querySelector('#tax')
     const TOTALAFTERTAX = document.querySelector('#totalAfterTax')
@@ -42,9 +46,29 @@ document.addEventListener('DOMContentLoaded', function(){
     getInfoByText(ITEM, displayItemInfo)
     inputSwitch()
 
+    KIND.addEventListener('change', e => {
+        let text;
+        let changePriceLabel;
+        if (KIND.value == 'purchase'){
+            text = 'المورد'
+            TAXFIELD.disabled = true
+            changePriceLabel = 'تغيير سعر البيع علي اساس سعر الشراء'
+        }
+        else if (KIND.value == 'sell'){
+            text = 'العميل'
+            changePriceLabel = 'تغيير سعر البيع علي اساس سعر الحالي'
+            if (TAXBUTTON.checked){
+                TAXFIELD.disabled = false
+            }
+        }
+        USERLABEL.innerHTML = text
+        CHANGEPRICE.parentNode.querySelector('label').innerHTML = changePriceLabel
+    })
+
     ITEM.addEventListener('keyup', e => {
         displayRecommendations(e.target, displayItemInfo)
     })
+
     ITEM.addEventListener('change', e => {
         displayItemInfo(e.target)
     })
@@ -65,6 +89,16 @@ document.addEventListener('DOMContentLoaded', function(){
         displayRecommendations(e.target)
     })
 
+    TAXBUTTON.addEventListener('change', e => {
+        let val = TAXBUTTON.checked
+        if (val && KIND.value == 'sell'){
+            TAXFIELD.disabled = false
+        }
+        else{
+            TAXFIELD.disabled = true
+        }
+    })
+
     FORM.addEventListener('submit', (e) => {
         e.preventDefault()
         if (KIND.value && USER.value && INVENTORY.value && PRICE.value && QUANTITY.value){
@@ -76,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 let availableQuantity = parseInt(AVAILABLEQUANTITY.innerHTML)
                 let quantity = QUANTITY.value
                 let price = PRICE.value
-                let total = price*quantity
+                let total = (price*quantity).toFixed(2)
                 let inventory = INVENTORY.options[INVENTORY.selectedIndex].textContent
                 let inventoryID = INVENTORY.value
                 // console.log(availableQuantity)
@@ -168,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 'code' : code,
                 'inventory' : inventory,
                 'quantity' : quantity,
-                'price' : price
+                'price' : price,
             }
             // Check if items available with these quantity and in this inventory ? push to Array : make false and return from table
             // console.log(dataInfo)
@@ -208,7 +242,8 @@ document.addEventListener('DOMContentLoaded', function(){
                 'user' : USER.value,
                 'items' : items,
                 'totalPrice' : TOTALAFTERTAX.value,
-                'tax' : TAX.value
+                'tax' : TAX.value,
+                'changePrice' : CHANGEPRICE.checked
             })
         })
         .then(window.location.href=`${BASE}/transactions`)
@@ -265,8 +300,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     function displayItemInfo(element){
-        let value =  element.dataset?.id || element.value
-        // console.log(value)
+        let value =  element.dataset?.id || element.value || false
         item = fetch(`${BASE}/getInfo/item/${value}`)
         .then(response => response.json().then(data => ({'data': data, 'status': response.status})))
         .then(result => {
@@ -311,7 +345,11 @@ document.addEventListener('DOMContentLoaded', function(){
         CHECKTABLE.querySelectorAll('.totalItem').forEach(element => sum += +element.innerHTML)
         TOTALBEFORETAX.value = sum.toFixed(2)
         // Change with your Tax !!!!!
-        TAX.value = (TOTALBEFORETAX.value * 0.14).toFixed(2)
+        let tax = 0
+        if (TAXBUTTON.checked && KIND.value == 'sell'){
+            tax = parseFloat(TAXFIELD.value) / 100
+        }
+        TAX.value = (TOTALBEFORETAX.value * tax).toFixed(2)
         TOTALAFTERTAX.value = (parseFloat(TOTALBEFORETAX.value) + parseFloat(TAX.value)).toFixed(2)
     }
 
