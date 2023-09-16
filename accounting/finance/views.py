@@ -406,7 +406,6 @@ def items(request):
             kwrags['categoryItem'] = category = request.POST.get('categoryItem')
             kwrags['purchasePrice'] = purchasePrice = request.POST.get('purchasePrice') or 0
             kwrags['sellPrice'] = sellPrice = request.POST.get('sellPrice') or 0
-            kwrags['quantity'] = quantity = request.POST.get('quantity') or 0
             kwrags['unit'] = unit = request.POST.get('unit')
             # quantityFromLastYear = request.POST.get('quantityFromLastYear') or 0
             if name and code and category and unit:
@@ -414,7 +413,7 @@ def items(request):
                     message = 'الصنف الذي تحاول ربطه بالبضاعه به خطأ'
                     categoryObj = ItemsCategories.objects.get(category=category)
                     message = 'بيانات التي تم ادخالها قد تكون مسجله بالفعل الرجاء المحاوله مجددا'
-                    Items.objects.create(item=name, code=code, category=categoryObj, unit=unit, sellPrice=sellPrice, purchasePrice=purchasePrice, quantity=quantity)
+                    Items.objects.create(item=name, code=code, category=categoryObj, unit=unit, sellPrice=sellPrice, purchasePrice=purchasePrice)
                 except :
                     failed = True
         else :
@@ -451,7 +450,7 @@ def items(request):
         if failed :
             request.session['redirected'] = True
             params = urlencode(kwrags)
-            print(current_url)
+            # print(current_url)
             return HttpResponseRedirect(reverse(current_url[-1])+f'?{params}') 
         return HttpResponseRedirect(reverse(current_url[-1])) 
 
@@ -584,6 +583,8 @@ def transactions(request):
         items = data['items']
         totalPrice = data['totalPrice']
         tax = data['tax']
+        changePrice = data['changePrice']
+        print(changePrice)
         if not items:
             return JsonResponse({'message' : 'Access Forbidden!'}, status=403)
         # Change User to user model instead of saving as string [TODO]
@@ -597,7 +598,8 @@ def transactions(request):
             quantity = int(product['quantity'])
             if transactionType == 'purchase':
                 item.purchasePrice = price
-                item.sellPrice = math.trunc(price * 1.1 * 100) / 100
+                if changePrice:
+                    item.sellPrice = math.trunc(price * 1.1 * 100) / 100
                 item.quantity += quantity
                 # update Inventory_Items => quantity 
                 row = inventory.itemsList.filter(item=item)
@@ -608,7 +610,8 @@ def transactions(request):
                     inventory.itemsList.add(inventory_item)
 
             elif transactionType == 'sell':
-                item.sellPrice = price
+                if changePrice:
+                    item.sellPrice = price
                 # update quantity of item
                 item.quantity -= quantity
                 # update Inventory_Items => quantity 

@@ -111,12 +111,18 @@
               </select>
             </div> -->
             <div class="col-auto">
-              <label for="user">العميل</label>
+              <label for="user" id="userLabel">العميل</label>
               <input type="text" class="form-control" id="user" placeholder="" name="user" data-table="user">
               <ul class="dropdown-menu">
               </ul>
             </div>
-            <div class="col-auto btn-contianer">
+            <div class="col-auto taxField">
+              <label for="taxes" id="">الضرايب</label>
+              <input type="text" class="form-control" id="taxes" placeholder="" name="taxes" disabled>
+              <input type="checkbox" name="taxActivated" id="taxActivated" value="true" >
+              <label for="taxActivated" class="text-muted" id="">تفعيل الضرائب</label>
+            </div>
+            <div class="col-auto btn-contianer align-items-center">
               <button type="submit" class="btn btn-primary">اضافه</button>
             </div>
           </form>
@@ -133,6 +139,13 @@
             <div class="col mb-4 w-25">
               <label for="totalAfterTax">الاجمالي بعد الضرايب</label>
               <input type="text" class="form-control" id="totalAfterTax" placeholder="" name="totalAfterTax" disabled value=0> 
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col mb-4 w-25">
+              <input type="checkbox" id="changePrice" name="changePrice" checked> 
+              <label for="changePrice">تغيير سعر البيع علي اساس سعر الشراء</label>
             </div>
           </div>
 

@@ -1,10 +1,10 @@
 Transactions Page :
     Fix Form
         - any rejected action pop-up Message at top of window
-        - change client to provider (vice versa) depending on type
-        - do not put taxes in purchase
-        - maybe put tax or not for selling 
-        - safe mode wanna change price depending on purchase || sell price
+        - change client to provider (vice versa) depending on type [Testing]
+        - do not put taxes in purchase [Testing]
+        - maybe put tax or not for selling [Testing]
+        - safe mode wanna change price depending on purchase || sell price [Testing]
         
     
     Fix CheckOut Table
@@ -20,10 +20,11 @@ Transactions Page :
         - make purchase and sell changes [ + || - ] [Testing]
 
 Items Page :
+    => Show Error Message From Fetch Request
     form : 
-        - remove quantitylastyear
+        - remove quantitylastyear [Done]
         - remove quantity
-        - change labels of item and category
+        - change labels of item and category [Done]
 
     overview Table :
         

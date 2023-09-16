@@ -15,23 +15,23 @@
     <div class="container mb-5 mt-5">
       <div class="btn-group mb-4" role="group" aria-label="Basic radio toggle button group">
         <input type="radio" class="btn-check" name="pageSwitch" id="categories" >
-        <label class="btn btn-outline-primary" for="categories">الاصناف</label>
+        <label class="btn btn-outline-primary" for="categories">الرئيسي</label>
       
         <input type="radio" class="btn-check" name="pageSwitch" id="items">
-        <label class="btn btn-outline-primary" for="items">البضاعه</label>
+        <label class="btn btn-outline-primary" for="items">الفرعي</label>
       </div>
 
       <form class="row g-3 items d-none" method="post">
           {% csrf_token %}
           <input value="item" name="kind" hidden>
           <div class="col-auto dropdown" id="itemDropDown">
-            <label for="item">الاصناف</label>
+            <label for="item">الرئيسي</label>
             <input type="text" class="form-control category-search" value="{{ data.categoryItem }}" aria-label="Default select example" name="categoryItem" id="item" data-table="category" autocomplete="false">
             <ul class="dropdown-menu">
             </ul>
           </div>
           <div class="col-auto">
-            <label for="nameItem">البضاعه</label>
+            <label for="nameItem">الفرعي</label>
             <input type="text" class="form-control" value="{{ data.item }}" id="nameItem" placeholder="" name="name">
           </div>
           <div class="col-auto">
@@ -50,10 +50,10 @@
             <label for="sellPriceItem">سعر البيع</label>
             <input type="text" class="form-control" id="sellPriceItem" value="{{ data.sellPrice }}" placeholder="" name="sellPrice">
           </div>
-          <div class="col-auto">
+          <!-- <div class="col-auto">
             <label for="quantityItem">الكميه</label>
             <input type="text" class="form-control" id="quantityItem" value="{{ data.quantity }}" placeholder="" name="quantity">
-          </div>
+          </div> -->
           <!-- <div class="col-auto">
             <label for="quantityFromLastYearItem"> كميه اول المده</label>
             <input type="text" class="form-control" id="quantityFromLastYearItem" placeholder="" name="quantityFromLastYear">
@@ -133,7 +133,7 @@
             <thead>
               <tr>
                   <th scope="col">الكود</th>
-                  <th scope="col">الاسم</th>
+                  <th scope="col">الرئيسي</th>
                   <th scope="col">المشتق منه</th>
                   <th scope="col"></th>
                   <th scope="col"></th>
@@ -163,7 +163,7 @@
                 <th scope="col">الاسم</th>
                 <th scope="col">كميه</th>
                 <th scope="col">الوحده</th>
-                <th scope="col">الصنف</th>
+                <th scope="col">الرئيسي</th>
                 <th scope="col">سعر الشراء</th>
                 <th scope="col">سعر البيع</th>
                 <th scope="col"></th>
