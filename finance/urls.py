@@ -21,4 +21,8 @@ urlpatterns = [
     path('checkavailable', checkAvailability, name='checkAvailability'),
     path('loginView', loginView, name='loginView'),
     path('logoutView', logoutView, name='logoutView'),
+    path('reportPage', reportPage, name='reportPage'),
+    path('settings', settings, name='settings'),
+    path('profile', profile, name='profile'),
+
 ]

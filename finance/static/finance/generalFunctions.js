@@ -1,4 +1,34 @@
 const BASE = window.location.origin
+const ABSURL = window.location.href.split('/')
+const URLKIND = ABSURL[ABSURL.length - 1].split('?')[0]
+
+document.addEventListener('DOMContentLoaded', function() {
+    const NAVITEMS = document.querySelectorAll('.nav-link')
+    console.log(ABSURL)
+    console.log(URLKIND)
+    let currentPageKind = ''
+    if (URLKIND == 'inventory'){
+        currentPageKind = 'inventory'
+    }
+    else if (URLKIND == 'items' || URLKIND == 'categories'){
+        currentPageKind = 'items'
+
+    }
+    else if (URLKIND == 'transactions'){
+        currentPageKind = 'transactions'
+    }
+    else if (URLKIND == 'reportPage'){
+        currentPageKind = 'reportPage'
+    }
+    else if (URLKIND == 'profile'){
+        currentPageKind = 'profile'
+    }
+    NAVITEMS.forEach(e => {
+        if (e.id == currentPageKind){
+            e.classList.add('active')
+        }
+    })
+})
 
 
 function inputSwitch(){

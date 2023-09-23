@@ -1,0 +1,77 @@
+{% extends 'finance/layout.html' %}
+{% load static %}
+
+{% block style %}
+<style>
+  .dropdown-menu{
+    width: calc(100% - 2 * calc(var(--bs-gutter-x) * .5)) !important;
+  }
+
+</style>
+{% endblock %}
+
+{% block body %}
+    <!-- Form Start -->
+    <div class="container mb-5 mt-5">
+      <div class="btn-group mb-4" role="group" aria-label="Basic radio toggle button group">
+        <input type="radio" class="btn-check" name="pageSwitch" id="general" checked>
+        <label class="btn btn-outline-primary" for="general">تقارير</label>
+
+        <input type="radio" class="btn-check" name="pageSwitch" id="details">
+        <label class="btn btn-outline-primary" for="details">كارت صنف</label>
+      
+      </div>
+
+      <form class="row g-3" method="get">
+          <input value="general" name="kind" hidden>
+          <div class="inventory dropdown col-auto">
+            <label for="fromInventory">من مخزن</label>
+            <input type="text" class="form-control" value="" aria-label="Default select example" name="fromInventory" id="fromInventory" data-table="inventory" autocomplete="false">
+            <ul class="dropdown-menu">
+            </ul>
+          </div>
+          <div class="inventory dropdown col-auto">
+            <label for="toInventory">الي مخزن</label>
+            <input type="text" class="form-control" value="" aria-label="Default select example" name="toInventory" id="toInventory" data-table="inventory" autocomplete="false">
+            <ul class="dropdown-menu">
+            </ul>
+          </div>
+          <div class="col-auto dropdown" id="itemDropDown">
+            <label for="fromItem">من صنف</label>
+            <input type="text" class="form-control" value="" aria-label="Default select example" name="fromItem" id="fromItem" data-table="item" autocomplete="false">
+            <ul class="dropdown-menu">
+            </ul>
+          </div>
+          <div class="col-auto dropdown">
+            <label for="toItem">الي صنف</label>
+            <input type="text" class="form-control" value="" id="toItem" placeholder="" data-table="item" name="toItem">
+            <ul class="dropdown-menu">
+            </ul>
+          </div>
+          <div class="col-auto">
+            <label for="fromDate">من تاريخ</label>
+            <input class="form-control me-2 mb-5 " type="date" id="fromDate" name="fromDate">
+          </div>
+          <div class="col-auto">
+            <label for="toDate">الي تاريخ</label>
+            <input class="form-control me-2 mb-5 " type="date" id="toDate" name="toDate">
+          </div>
+          <div class="row btn-contianer">
+            <div class="col-2">
+              <button type="submit" class="btn btn-primary">عرض</button>
+            </div>
+          </div>
+      </form>
+
+      <!-- Messages -->
+      {% if message %}
+        <div class="alert alert-danger pop-up">{{ message }}</div>
+      {% endif %}
+    </div>
+    <!-- Form End -->
+{% endblock %}
+
+{% block script %}
+
+<script src="{% static 'finance/reportPage.js' %}"></script>
+{% endblock %}

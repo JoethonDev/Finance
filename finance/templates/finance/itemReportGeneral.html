@@ -1,0 +1,156 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <pdf:language name=""/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير بضاعه {{ data.item }}</title>
+    <link rel="stylesheet" href="{% static 'bootstrap.rtl.min.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/fontawesome-free-6.4.2-web/fontawesome-free-6.4.2-web/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/fontawesome-free-6.4.2-web/fontawesome-free-6.4.2-web/css/solid.min.css' %}">
+    <style>
+        .w-220{
+            min-width: 220px;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 5mm auto;
+            border: 1px #D3D3D3 solid;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        
+
+        @page {
+            size: A4;
+            /* margin-top: 1000px; */
+        }
+        @media print {
+            html, body {
+                width: 210mm;
+                height: 297mm;        
+            }
+            .page {
+                margin: 0;
+                /* border: initial;
+                border-radius: initial;
+                width: initial;
+                min-height: initial;
+                box-shadow: initial;
+                background: initial; */
+                page-break-after: always;
+            }
+            
+        }
+    </style>
+
+<body>
+    <pdf:language name=""/>
+    <div class="container-fluid mt-5">
+        <div class="page">
+            <!-- Start Company Info -->
+            <div class="info-company d-flex justify-content-between">
+                <div class="contact">
+                    <h4>شركه دي اس للتجاره العالميه</h4>
+                    <h6>company ds for trading</h6>
+                    <h6>العنوان : 15-17 شارع سوق التوفيقيه القاهره</h6>
+                    <h6>التليفون : 0225744669 - 025781325</h6>
+                </div>
+                <div class="tax-number">
+                    <h6>رقم الملف الضريبي : 987</h6>
+                    <h6>رقم التسجيل الضريبي : 398-083-244</h6>
+                    <h6>التليفون : 245936</h6>
+                </div>
+            </div>
+            <!-- End Company Info -->
+
+            <!-- Start Item Title -->
+            <div class="title text-center border border-dark border border-3 p-3 m-auto mt-5 mb-5 w-50 ">
+                <h5>تقرير بضاعه {{ data.item }}</h5>
+            </div>
+            <!-- End Item Title -->
+
+            <!-- Start overview Details -->
+            <div class="item">
+                <div class="row justify-content-between mb-4 w-220">
+                    <div class="col-auto">
+                        <h6>من مخزن : {{ data.fromInventory }}</h6>
+                    </div>
+                    <div class="col-auto">
+                        <h6>الي مخزن : {{ data.toInventory }}</h6>
+                    </div>
+                </div>
+                <div class="row justify-content-between mb-4 w-220">
+                    <div class="col-auto">
+                        <h6>من صنف : {{ data.fromItem }}</h6>
+                    </div>
+                    <div class="col-auto">
+                        <h6>الي صنف : {{ data.toItem }}</h6>
+                    </div>
+                </div>
+                <div class="row justify-content-between mb-4 w-220">
+                    <div class="col-auto">
+                        <h6>من تاريخ : {{ data.fromDate }}</h6>
+                    </div>
+                    <div class="col-auto">
+                        <h6>الي تاريخ : {{ data.toDate }}</h6>
+                    </div>
+                </div>
+
+            </div>
+            <!-- End overview Details -->
+
+            <!-- Start Table -->
+            <hr>
+                <div class="containerCategory mb-5 mt-5">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <div class="header">
+                            <h3>المخازن</h3>
+                        </div>
+                    </div>
+                    <table class="table table-striped">
+                        <thead>
+                            <th scope="col">كود</th>
+                            <th scope="col">اسم الصنف</th>
+                            <th scope="col">الوحده</th>
+                            <th scope="col">سعر البيع</th>
+                            <th scope="col">الرصيد اول المده</th>
+                            <th scope="col">الكميه الحاليه</th>
+                            <th scope="col">الكميه الوارده</th>
+                            <th scope="col">الكميه الصادره</th>
+                            <th scope="col">الرصيد الوارده</th>
+                            <th scope="col">الرصيد الصادره</th>
+                            <th scope="col">الرصيد الاجمالي الحالي</th>
+                        </thead>
+                        <tbody>
+                            {% for item in data.items %}
+                                <tr>
+                                    <td>{{ item.code }}</td>
+                                    <td>{{ item.item }}</td>
+                                    <td>{{ item.unit }}</td>
+                                    <td>{{ item.price }}</td>
+                                    <td>{{ item.quantityOfStart }}</td>
+                                    <td>{{ item.currentQuantity }}</td>
+                                    <td>{{ item.incomeQuantity }}</td>
+                                    <td>{{ item.outcomeQuantity }}</td>
+                                    <td>{{ item.outcomeBalance }}</td>
+                                    <td>{{ item.incomeBalance }}</td>
+                                    <td>{{ item.totalBalance }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            <!-- End Table -->
+        </div>
+
+    </div>
+    
+</body>
+</html>

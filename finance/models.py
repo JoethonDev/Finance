@@ -1,5 +1,7 @@
 from django.db import models
 
+import math
+
 # Constrains
 USER_PARTIES = [
     ('seller', 'Seller'),
@@ -15,11 +17,27 @@ TRANSACTIONS = [
 class Settings(models.Model):
     companyEnglishName = models.CharField(max_length=256)
     companyArabicName = models.CharField(max_length=256)
-    yearStart = models.DateTimeField()
-    taxes = models.IntegerField()
+    yearStart = models.DateTimeField(null=True)
+    taxes = models.FloatField(null=True)
+    taxFileNumber = models.CharField(max_length=256, default=None, null=True)
+    taxRegistrationNumber = models.CharField(max_length=256, default=None, null=True)
+    tax3Number = models.CharField(max_length=256, default=None, null=True)
+    phoneNumber = models.CharField(max_length=256, default=None, null=True)
+    address = models.CharField(max_length=256, default=None, null=True)
     # Make Choices here [by average || by last] [TODO]
     assestsCalculations = models.CharField(max_length=256)
     pass
+
+    def serialize(self):
+        return {
+            'engName' : self.companyEnglishName,
+            'arName' : self.companyArabicName,
+            'taxFileNumber' : self.taxFileNumber,
+            'taxRegistrationNumber' : self.taxRegistrationNumber,
+            'tax3Number' : self.tax3Number,
+            'phoneNumber' : self.phoneNumber,
+            'address' : self.address,
+        }
 
 class Countries(models.Model):
     name = models.CharField(max_length=256)
@@ -33,6 +51,7 @@ class Users(models.Model):
     email = models.CharField(max_length=256)
     partyType = models.CharField(max_length=256, choices=USER_PARTIES)
     country = models.ForeignKey(Countries, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+
 
 class ItemsCategories(models.Model):
     category = models.CharField(max_length=256, blank=False, unique=True)
@@ -149,6 +168,9 @@ class Transactions(models.Model):
     user = models.CharField(max_length=256)
     dateTime = models.DateTimeField(auto_now_add=True) 
 
+    def getDate(self):
+        return self.dateTime.strftime('%d/%m/%Y')
+
     def serialize(self):
         items = {}
         for item in self.itemsList.all():
@@ -173,12 +195,15 @@ class Transactions(models.Model):
         }
 
 class Transactions_Items(models.Model):
-    item = models.ForeignKey(Items, on_delete=models.DO_NOTHING)
+    item = models.ForeignKey(Items, on_delete=models.DO_NOTHING, related_name='transactionsList')
     transaction = models.ForeignKey(Transactions, on_delete=models.DO_NOTHING, related_name='itemsList')
     # Remove Null and Blank!!!
     inventory = models.ForeignKey(Inventories, on_delete=models.DO_NOTHING, null=True, blank=True)
     quantity = models.IntegerField(blank=False)
     price = models.FloatField(blank=False) 
+
+    def getTotalPrice(self):
+        return self.quantity * math.trunc(self.price*100) / 100
 
     def serialize(self):
         return {

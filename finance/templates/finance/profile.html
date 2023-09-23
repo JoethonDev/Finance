@@ -1,0 +1,85 @@
+{% extends 'finance/layout.html' %}
+{% load static %}
+
+{% block style %}
+<style>
+  hr{
+    width: 50%;
+    margin: inherit;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+    <!-- Form Start -->
+    <div class="container mb-5 mt-5">
+      {% if message %}
+        {% if success == 'true' %}
+          <div class="alert alert-success pop-up">
+            {{ message }}
+          </div>
+        {% else %}
+          <div class="alert alert-danger pop-up">
+            {{ message }}
+          </div>
+        {% endif %}
+      {% endif %}
+      <form class="row g-3" method="post">
+          {% csrf_token %}
+          <div class="col-auto">
+            <label for="username">اسم المستخدم</label>
+            <input type="text" class="form-control" value="{{ username }}" id="username" placeholder="" name="username">
+          </div>
+          <div class="col-auto">
+            <label for="name">الاسم</label>
+            <input type="text" class="form-control" value="{{ name }}" id="name" placeholder="" name="name">
+          </div>
+          <div class="col-auto">
+            <label for="password">كلمه المرور</label>
+            <input type="password" class="form-control" value="" id="password" placeholder="" name="password">
+          </div>
+          <div class="col-auto btn-contianer">
+            <button type="submit" class="btn btn-primary">تعديل</button>
+          </div>
+      </form>
+
+      <hr>
+
+      <form class="row g-3" method="post" action="{% url 'settings' %}">
+          {% csrf_token %}
+          <div class="col-auto">
+            <label for="companyEnglishName">الاسم الشركه بالانجليزيه</label>
+            <input type="text" class="form-control" id="companyEnglishName" value="{{ settings.engName }}" name="engName">
+          </div>
+          <div class="col-auto">
+            <label for="companyArabicName">الاسم الشركه بالعربيه</label>
+            <input type="text" class="form-control" id="companyArabicName" placeholder="" value="{{ settings.arName }}" name="arName">
+          </div>
+          <div class="col-auto">
+            <label for="taxFileNumber">رقم الملف الضريبي</label>
+            <input type="text" class="form-control" id="taxFileNumber" value="{{ settings.taxFileNumber }}" name="taxFileNumber">
+          </div>
+          <div class="col-auto">
+            <label for="taxRegistrationNumber">رقم التسجيل الضريبي</label>
+            <input type="text" class="form-control" id="taxRegistrationNumber" placeholder="" value="{{ settings.taxRegistrationNumber }}" name="taxRegistrationNumber">
+          </div>
+          <div class="col-auto">
+            <label for="tax3Number">البطاقه الضريبيه</label>
+            <input type="text" class="form-control" id="tax3Number" value="{{ settings.tax3Number }}" name="tax3Number">
+          </div>
+          <div class="col-auto">
+            <label for="phoneNumber">رقم التليفون</label>
+            <input type="text" class="form-control" id="phoneNumber" placeholder="" value="{{ settings.phoneNumber }}" name="phoneNumber">
+          </div>
+          <div class="col-auto">
+            <label for="address">العنوان</label>
+            <input type="text" class="form-control" id="address" placeholder="" value="{{ settings.address }}" name="address">
+          </div>
+          <div class="col-auto btn-contianer">
+            <button type="submit" class="btn btn-primary">اضافه</button>
+          </div>
+      </form>
+    </div>
+    <!-- Form End -->
+
+{% endblock %}

@@ -1,10 +1,11 @@
 Transactions Page :
     Fix Form
         - any rejected action pop-up Message at top of window
-        - change client to provider (vice versa) depending on type
-        - do not put taxes in purchase
-        - maybe put tax or not for selling 
-        - safe mode wanna change price depending on purchase || sell price
+        - change client to provider (vice versa) depending on type [Testing]
+        - do not put taxes in purchase [Testing]
+        - maybe put tax or not for selling [Testing]
+        - safe mode wanna change price depending on purchase || sell price [Testing]
+        - make discount field
         
     
     Fix CheckOut Table
@@ -20,10 +21,11 @@ Transactions Page :
         - make purchase and sell changes [ + || - ] [Testing]
 
 Items Page :
+    => Show Error Message From Fetch Request
     form : 
-        - remove quantitylastyear
+        - remove quantitylastyear [Done]
         - remove quantity
-        - change labels of item and category
+        - change labels of item and category [Done]
 
     overview Table :
         
@@ -56,3 +58,14 @@ Login Page :
 => when hosting django project what database is used?
 => good practices
 => Hostings for Django
+=> Report System [Inventory || Items] (Name - Code - Quantity - Unit - Income Balance - Outcome Balance - Income Quantity - Outcome Quantity - Current Quantity - Quantity Of Start) 
+[Detailed Items] (
+    Name - Code - Unit - Start Quantity
+    Table => [ Income Quantity - Outcome Quantity - Current Quantity of this transaction - Income Balance - Outcome Balance - Client - Transaction Type]
+)
+=> User System [Add User through transaction | Page For users (Add - Update - Report)]
+=> Profile System [Done]
+=> Settings System [Tax - company name arabic - company name english - 3 Fields numbers of taxes - phone No. - Address] [Done]
+=> Navigation Bar set active to current page using Js + Change Colors + Add Profile link + Add Report Page Link [Done]
+=> Make Detailed Item Report
+=> Reports [Separate Company Details from HTML and use it as include] + Generate Reports Through Python with traditional way of making pdf 

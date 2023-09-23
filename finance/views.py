@@ -2,21 +2,23 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.utils.http import urlencode
 from django.urls import reverse
-from django.core import serializers
+from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from django.template import Context, loader
 from django.contrib.auth import authenticate, login, logout
 from .models import *
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.core.paginator import Paginator
 from json import loads, dumps
 from urllib.parse import unquote
 import math
 import datetime
 
-# LOGIN_URL = reverse('loginView')
 
+# Functions
+def companyDetails():
+    data = Settings.objects.first()
+    return data.serialize()
 
 # JSON Requests
 def getInfo(request, id=None, name=None):
@@ -167,7 +169,8 @@ def inventory(request):
                 'rowsOptions' : [1,3,5,10,20,50,100],
                 'name' : inventoryName,
                 'id' : inventoryID,
-                'data' : data
+                'data' : data,
+                'arName' : companyDetails()['arName']
             })
         else :
             hasPrevious = currentPage.has_previous()
@@ -382,7 +385,8 @@ def items(request):
                 'rowsOptions' : [1,3,5,10,20,50,100],
                 'currentPage' : currentPage,
                 'kind' : kind,
-                'data' : data
+                'data' : data,
+                'arName' : companyDetails()['arName']
             })
         else :
             if kind == 'items' or kind == 'item' :
@@ -568,6 +572,7 @@ def transactions(request):
                 'currentPage' : currentPage,
                 'rows' : int(rowsNumber),
                 'rowsOptions' : [1,3,5,10,20,50,100],
+                'arName' : companyDetails()['arName']
             })
         else :
             hasPrevious = currentPage.has_previous()
@@ -898,27 +903,363 @@ def categoryReport(request, id):
     return render(request, 'finance/inventoryReport.html', {'data' : data})
 
 
-# from xhtml2pdf import pisa
-# from io import StringIO, BytesIO
+def reportPage(request):
+    """
+    [Inventory || Items] 
+    Inventories, From/To Date, From/To Item
+    (Name - Code - Quantity - Unit - Income Balance - Outcome Balance - Income Quantity 
+    - Outcome Quantity - Current Quantity - Quantity Of Start) 
+    [Detailed Items] (
+        Name - Code - Unit - Start Quantity
+        Table => [ Income Quantity - Outcome Quantity - Current Quantity of this transaction - Income Balance 
+        - Outcome Balance - Client - Transaction Type]
+    )
+    """
+    # Quick
+    data = {}
+    data['items'] = []
+    ctx = {
+        'arName' : companyDetails()['arName']
+    }
 
-# def render_to_pdf_response(template_name, context_dict):
+    # Get Params
+    kind = request.GET.get('kind', None)
+    data['fromItem'] = fromItem = request.GET.get('fromItem', None)
+    data['toItem'] = toItem = request.GET.get('toItem', None)
+    fromDate = request.GET.get('fromDate')
+    toDate = request.GET.get('toDate')
 
-#     template = loader.get_template(template_name)
-#     html = template.render(context_dict)
-#     # return HttpResponse(html)
-#     result = BytesIO()
-#     pdf = pisa.CreatePDF(BytesIO(html.encode('utf-8')), result, encoding='UTF-8')
-#     if not pdf.err:
-#         response = HttpResponse(result.getvalue(), content_type='application/pdf')
+    if (not kind) :
+        return render(request, 'finance/reportPage.html', ctx)
+    elif kind == 'general' :
+        template = 'finance/itemReportGeneral.html'
+    elif kind == 'details' :
+        template = 'finance/itemReportGeneral.html'
 
-#     return response
+    # If both Params of any field is empty return Error
+    if (not fromItem and not toItem) :
+        ctx['message'] = 'برجاء ادخال الاصناف '
+        return render(request, 'finance/reportPage.html', ctx)
 
-# def renderPdf(template, content={}):
-    t = get_template(template)
-    send_data = t.render(content)
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(send_data.encode("ISO-8859-1")), result)
-    if not pdf.err:
-        return HttpResponse(result.getvalue(), content_type='application/pdf')
-    else:
-        return None
+    # Check if None then use second value for item
+    if fromItem :
+        fromItem = Items.objects.get(Q(code=fromItem) | Q(item=fromItem)).pk
+    else :
+        fromItem = Items.objects.first().pk
+
+    if toItem :
+        toItem = Items.objects.get(Q(code=toItem) | Q(item=toItem)).pk
+    else :
+        toItem = Items.objects.last().pk
+
+    # Prepare Query Filter
+    kwrags = {}
+
+    # Make Time filter
+    time = {}
+    if fromDate:
+        fromDate = datetime.datetime.strptime(fromDate, '%Y-%m-%d')
+        time['transaction__dateTime__gte'] = fromDate
+    else :
+        data['fromDate'] = Transactions.objects.first().getDate()
+
+    if toDate:
+        toDate += ' 23:59:59'
+        toDate = datetime.datetime.strptime(toDate, '%Y-%m-%d %H:%M:%S')
+        time['transaction__dateTime__lte'] = toDate
+    else :
+        data['toDate'] = Transactions.objects.last().getDate()
+
+    # Make pk in order for filtering
+    if fromItem < toItem :
+        kwrags['pk__gte'] = fromItem
+        kwrags['pk__lte'] = toItem
+    elif fromItem > toItem :
+        kwrags['pk__lte'] = fromItem
+        kwrags['pk__gte'] = toItem
+    else :
+        kwrags['pk'] = fromItem
+
+
+    if kind == 'general' :
+        fromInventory = request.GET.get('fromInventory', None)
+        toInventory = request.GET.get('toInventory', None)
+        kwragsInv = {}
+  
+        # Check if there is inventory value
+        if fromInventory or toInventory:
+            if fromInventory :
+                try :    
+                    fromInventory = Inventories.objects.get(Q(inventory=fromInventory) | Q(pk=fromInventory))
+                except :    
+                    fromInventory = Inventories.objects.get(Q(inventory=fromInventory))
+            else :
+                fromInventory = Inventories.objects.first()
+            data['fromInventory'] = fromInventory.inventory
+            fromInventoryPK = fromInventory.pk
+            
+
+            if toInventory :
+                data['toInventory'] = toInventory
+                try :
+                    toInventory =  Inventories.objects.get(Q(inventory=toInventory) | Q(pk=toInventory))
+                except :    
+                    toInventory =  Inventories.objects.get(Q(inventory=toInventory))
+            else :
+                toInventory = Inventories.objects.last()
+            data['toInventory'] = toInventory.inventory
+            toInventoryPK = toInventory.pk
+
+            if fromInventoryPK < toInventoryPK :
+                kwragsInv['inventory__pk__gte'] = fromInventoryPK
+                kwragsInv['inventory__pk__lte'] = toInventoryPK
+            elif fromInventoryPK > toInventoryPK :
+                kwragsInv['inventory__pk__lte'] = fromInventoryPK
+                kwragsInv['inventory__pk__gte'] = toInventoryPK
+            else :
+                kwragsInv['inventory__pk'] = fromInventoryPK
+
+            itemSet = [ item['item'] for item in Inventory_Items.objects.filter(**kwragsInv).distinct().values('item')]
+            kwrags['pk__in'] = itemSet
+        else :
+            fromInventory = Inventories.objects.first()
+            data['fromInventory'] = fromInventory.inventory
+            toInventory = Inventories.objects.last()
+            data['toInventory'] = toInventory.inventory
+
+        items = Items.objects.filter(**kwrags).order_by('pk')
+        # (Name - Code - Quantity - Unit - Income Balance - Outcome Balance - Income Quantity - Outcome Quantity - Current Quantity - Quantity Of Start) 
+        for item in items:
+            kwrags = {
+                'item' : item,
+                'transaction__transactionType' : 'purchase',
+                **kwragsInv,
+                **time
+            }
+            name  = item.item
+            code  = item.code
+            unit  = item.unit
+            price = item.sellPrice
+
+            # Income Quantity
+            purchaseTransactions = Transactions_Items.objects.filter(**kwrags).order_by('pk')
+            incomeQuantity = purchaseTransactions.aggregate(Sum('quantity'))['quantity__sum']
+            incomeBalance = math.trunc(sum([transactionPrice.getTotalPrice() for transactionPrice in purchaseTransactions]) * 100) / 100
+
+            # Outcome Quantity
+            kwrags['transaction__transactionType'] = 'sell'
+            sellTransactions = Transactions_Items.objects.filter(**kwrags).order_by('pk')
+            outcomeQuantity = sellTransactions.aggregate(Sum('quantity'))['quantity__sum'] or 0
+            outcomeBalance = math.trunc(sum([transactionPrice.getTotalPrice() for transactionPrice in sellTransactions]) * 100) / 100
+
+            # Quantity of Start
+            quantityOfStart = sum([itemQuantity.quantityFromLastYear for itemQuantity in item.inventoriesList.filter(**kwragsInv)])
+            quantity = sum([itemQuantity.quantity for itemQuantity in item.inventoriesList.filter(**kwragsInv)])
+            totalPrice = quantity * math.trunc(price * 100) / 100
+            # Add Data 
+            data['items'].append({
+                'item' : name,
+                'code' : code,
+                'currentQuantity' : quantity,
+                'unit' : unit,
+                'price' : price,
+                'totalBalance' : totalPrice,
+                'incomeQuantity' : incomeQuantity,
+                'incomeBalance' : incomeBalance,
+                'outcomeQuantity' : outcomeQuantity,
+                'outcomeBalance' : outcomeBalance,
+                'quantityOfStart' : quantityOfStart,
+            })
+        # print(data)
+
+    elif kind == 'details':
+        items = Items.objects.filter(**kwrags).order_by('pk')
+
+        # Name - Code - Unit - Start Quantity
+        # Table => [ Income Quantity - Outcome Quantity - Current Quantity of this transaction - Income Balance 
+        # - Outcome Balance - Client - Transaction Type]
+        for item in items :
+            name  = item.item
+            code  = item.code
+            unit  = item.unit
+            quantity  = item.quantity
+            currentPerTransaction = quantityOfStart = sum([q.quantityFromLastYear for q in item.inventoriesList.all()]) or 0
+
+            # Table
+            totalIncomingQuantity = 0
+            totalOutcomingQuantity = 0
+            totalIncomingBalance = 0
+            totalOutcomingBalance = 0
+            table = []
+            for transaction in item.transactionsList.all().order_by('pk'):
+                price = transaction.price
+                quantityPerTransaction = transaction.quantity
+                inventory = transaction.inventory.inventory if transaction.inventory else None
+                client = transaction.transaction.user
+                transactionType =  transaction.transaction.transactionType
+                total = math.trunc(price*100) * quantityPerTransaction / 100
+
+                if transactionType == 'sell':
+                    transactionType = 'فاتوره مبيعات'
+                    currentPerTransaction -= quantityPerTransaction
+                    totalOutcomingQuantity += quantityPerTransaction
+                    totalOutcomingBalance += total
+                    incomeQuantity = 0
+                    outcomeQuantity = quantityPerTransaction
+                    
+                elif transactionType == 'purchase':
+                    transactionType = 'فاتوره مشتريات'
+                    currentPerTransaction += quantityPerTransaction
+                    totalIncomingQuantity += quantityPerTransaction
+                    totalIncomingBalance += total
+                    incomeQuantity = quantityPerTransaction
+                    outcomeQuantity = 0
+                
+                table.append({
+                    'incomeQuantity' : incomeQuantity,
+                    'outcomeQuantity' : outcomeQuantity,
+                    'currentQuantity' : currentPerTransaction,
+                    'transactionType' : transactionType,
+                    'inventory' : inventory,
+                    'client' : client,
+                    'total' : total,
+                })
+            
+            data['items'].append({
+                'item' : name,
+                'code' : code,
+                'unit' : unit,
+                'quantity' : quantity,
+                'quantityOfStart' : quantityOfStart,
+                'totalIncomingQuantity' : totalIncomingQuantity,
+                'totalOutcomingQuantity' : totalOutcomingQuantity,
+                'totalIncomingBalance' : totalIncomingBalance,
+                'totalOutcomingBalance' : totalOutcomingBalance,
+                'table' : table,
+                'profit' : totalOutcomingBalance - totalIncomingBalance,
+            })
+        
+
+    else :
+        return JsonResponse({'message' : 'Invalid Route!'}, status=404)
+        
+    return render(request, template, {
+        'data' : data
+    })
+
+@login_required(login_url="loginView")
+def profile(request):
+    if request.method == 'GET' :
+        message = request.session.get('message', None)
+        success = request.session.get('success', None)
+        if message :
+            del request.session['message']
+            del request.session['success']
+        user = User.objects.get(username=request.user.username)
+        username = user.username
+        firstName = user.first_name
+        lastName = user.last_name
+        settingsData = settings(request)
+        return render(request, 'finance/profile.html', {
+            'username' : username,
+            'name' : f'{firstName} {lastName}',
+            'settings' : settingsData,
+            'message' : message,
+            'success' : success,
+            'arName' : companyDetails()['arName']
+        })
+    elif request.method == 'POST' :
+        username = request.POST.get('username', '')
+        try :
+            firstName, lastName = request.POST.get('name', '').split()
+        except :
+            firstName = request.POST.get('name', '')
+            lastName = ''
+        password = request.POST.get('password', None)
+        if not (username and  firstName) :
+            request.session['message'] = 'برجاء ادخال اسم مستخدم و الاسم الاول'
+            request.session['success'] = 'false'
+        else :
+            user = User.objects.filter(username=request.user.username)
+            if user and username != request.user.username:
+                request.session['message'] = 'اسم المستخدم موجود من قبل برجاء استخدام غيره'
+                request.session['success'] = 'false'
+
+            else :
+                user = User.objects.get(username=request.user.username)
+                user.first_name = firstName
+                user.last_name = lastName
+                if password :
+                    user.set_password(password)
+                user.save()
+                request.session['message'] = 'تم تعديل البيانات بنجاح!'
+                request.session['success'] = 'true'
+
+
+        return HttpResponseRedirect(reverse('profile'))
+    else :
+        return JsonResponse({'message' : 'Invalid Route'}, status=404)
+    
+def settings(request):
+    data = Settings.objects.first()
+
+    if request.method == 'GET' :
+        if data :
+            data = data.serialize()
+        else :
+            data = {}
+        return data
+    
+    elif request.method == 'POST' :
+        companyEnglishName = request.POST.get('engName', None)
+        companyArabicName = request.POST.get('arName', None)
+        taxFileNumber = request.POST.get('taxFileNumber', None)
+        taxRegistrationNumber = request.POST.get('taxRegistrationNumber', None)
+        tax3Number = request.POST.get('tax3Number', None)
+        phoneNumber = request.POST.get('phoneNumber', None)
+        address = request.POST.get('address', None)
+        if taxFileNumber and taxRegistrationNumber and tax3Number :
+            request.session['message'] = 'برجاء ادخال البيانات الضريبيه'
+            request.session['success'] = 'false'
+
+        if data :
+            data.companyEnglishName =  companyEnglishName
+            data.companyArabicName = companyArabicName
+            data.taxRegistrationNumber = taxFileNumber
+            data.taxFileNumber = taxRegistrationNumber
+            data.tax3Number = tax3Number
+            data.phoneNumber = phoneNumber
+            data.address = address
+            try :
+                data.save()
+                request.session['message'] = 'تم تعديل البيانات بنجاح!'
+                request.session['success'] = 'true'
+
+
+            except :
+                request.session['message'] = "برجاء المحاوله مره اخري!"
+                request.session['success'] = 'false'
+
+        else :
+            try :
+                Settings.objects.create(
+                    companyEnglishName =  companyEnglishName,
+                    companyArabicName = companyArabicName,
+                    taxRegistrationNumber = taxFileNumber,
+                    taxFileNumber = taxRegistrationNumber,
+                    tax3Number = tax3Number,
+                    phoneNumber = phoneNumber,
+                    address = address
+                )
+                request.session['message'] = 'تم تسجيل البيانات بنجاح!'
+                request.session['success'] = 'true'
+
+            except Exception as e :
+                print(str(e))
+                request.session['message'] = "برجاء المحاوله مره اخري!"
+                request.session['success'] = 'false'
+
+        return HttpResponseRedirect(reverse('profile'))
+    else :
+        return JsonResponse({'message' : 'Invalid Route'}, status=404)
+

@@ -11,6 +11,10 @@
     <!-- <link href="{% static 'fontawesome.min.css' %}" rel="stylesheet"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
+        .nav-item{
+          color: #fff;
+        }
+
         a{
           text-decoration: none;
           color: initial;
@@ -52,19 +56,25 @@
     
 
     <!-- Navbar start -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-          <a class="navbar-brand" href="#">الشركه</a>
+          <a class="navbar-brand text-dark" href="#">{{ arName }}</a>
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{% url 'inventory' %}">المخازن</a>
+                <a class="nav-link" id="inventory" aria-current="page" href="{% url 'inventory' %}">المخازن</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'transactions' %}">الفواتير</a>
+                <a class="nav-link" id="transactions" href="{% url 'transactions' %}">الفواتير</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'items' %}">البضاعه</a>
+                <a class="nav-link" id="items" href="{% url 'items' %}">البضاعه</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="reportPage" href="{% url 'reportPage' %}">التقارير</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="profile" href="{% url 'profile' %}">الحساب الشخصي</a>
               </li>
             </ul>
           </div>
@@ -86,5 +96,6 @@
     {% endif %}
   {% endif %}
   <!-- End messages -->
+  <script src="{% static 'finance/generalFunctions.js' %}"></script>
 </body>
 </html>
