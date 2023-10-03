@@ -4,14 +4,12 @@ const URLKIND = ABSURL[ABSURL.length - 1].split('?')[0]
 
 document.addEventListener('DOMContentLoaded', function() {
     const NAVITEMS = document.querySelectorAll('.nav-link')
-    console.log(ABSURL)
-    console.log(URLKIND)
     let currentPageKind = ''
     if (URLKIND == 'inventory'){
         currentPageKind = 'inventory'
     }
     else if (URLKIND == 'items' || URLKIND == 'categories'){
-        currentPageKind = 'items'
+        currentPageKind = 'itemsPage'
 
     }
     else if (URLKIND == 'transactions'){

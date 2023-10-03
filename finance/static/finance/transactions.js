@@ -7,10 +7,11 @@ document.addEventListener('DOMContentLoaded', function(){
     const CODE = document.querySelector('#code')
     const UNIT = document.querySelector('#unit')
     const PRICE = document.querySelector('#price')
-    const INVENTORY = document.querySelector('#inventory')
+    const INVENTORY = document.querySelector('#inventoryField')
     const QUANTITY = document.querySelector('#quantity')
-    const TAXFIELD = document.querySelector('#taxes')
-    const TAXBUTTON = document.querySelector('#taxActivated')
+    const ACTIVATEFIELD = document.querySelectorAll('.activatedFields')
+    const DISCOUNTVALUE = document.querySelector('#discountValue')
+    const ACTIVATEBUTTON = document.querySelectorAll('.activated')
     const AVAILABLEQUANTITY = document.querySelector('.availableQuantity span')
     const CHECKTABLE = document.querySelector('.checkoutTable table tbody')
     const CLEARBUTTON = document.querySelector('#clearAll')
@@ -51,15 +52,17 @@ document.addEventListener('DOMContentLoaded', function(){
         let changePriceLabel;
         if (KIND.value == 'purchase'){
             text = 'المورد'
-            TAXFIELD.disabled = true
+            ACTIVATEFIELD.forEach(e => {
+                e.disabled = true
+            })
             changePriceLabel = 'تغيير سعر البيع علي اساس سعر الشراء'
         }
         else if (KIND.value == 'sell'){
             text = 'العميل'
             changePriceLabel = 'تغيير سعر البيع علي اساس سعر الحالي'
-            if (TAXBUTTON.checked){
-                TAXFIELD.disabled = false
-            }
+            ACTIVATEBUTTON.forEach(element => {
+                checkActive(element)
+            })
         }
         USERLABEL.innerHTML = text
         CHANGEPRICE.parentNode.querySelector('label').innerHTML = changePriceLabel
@@ -69,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function(){
         displayRecommendations(e.target, displayItemInfo)
     })
 
-    ITEM.addEventListener('change', e => {
+    ITEM.addEventListener('blur', e => {
         displayItemInfo(e.target)
     })
 
@@ -79,8 +82,9 @@ document.addEventListener('DOMContentLoaded', function(){
 
     INVENTORY.addEventListener('change', e => {
         let id =  e.target.value
+        console.log(id)
         item.then(result => {
-            // console.log(result)
+            console.log(result)
             displayAvailableQuantity(result.inventories, id)
         })
     })
@@ -89,14 +93,10 @@ document.addEventListener('DOMContentLoaded', function(){
         displayRecommendations(e.target)
     })
 
-    TAXBUTTON.addEventListener('change', e => {
-        let val = TAXBUTTON.checked
-        if (val && KIND.value == 'sell'){
-            TAXFIELD.disabled = false
-        }
-        else{
-            TAXFIELD.disabled = true
-        }
+    ACTIVATEBUTTON.forEach(element => {
+        element.addEventListener('change', e => {
+            checkActive(e.target)
+        })
     })
 
     FORM.addEventListener('submit', (e) => {
@@ -243,6 +243,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 'items' : items,
                 'totalPrice' : TOTALAFTERTAX.value,
                 'tax' : TAX.value,
+                'discount' : DISCOUNTVALUE.value,
                 'changePrice' : CHANGEPRICE.checked
             })
         })
@@ -309,20 +310,25 @@ document.addEventListener('DOMContentLoaded', function(){
                 return
             }
             result = result.data.item
-            CODE.value = result.code
-            UNIT.value = result.unit
-            ITEM.value = result.item
-            if (KIND.value == 'purchase'){
-                PRICE.value = result.purchasePrice
+            try {
+                CODE.value = result.code
+                UNIT.value = result.unit
+                ITEM.value = result.item
+                if (KIND.value == 'purchase'){
+                    PRICE.value = result.purchasePrice
+                }
+                else{
+                    PRICE.value = result.sellPrice
+                }
+                if (INVENTORY.value){
+                    displayAvailableQuantity(result.inventories, INVENTORY.value)
+                }
+                else{
+                    AVAILABLEQUANTITY.innerHTML = result.quantity;
+                }
             }
-            else{
-                PRICE.value = result.sellPrice
-            }
-            if (INVENTORY.value){
-                displayAvailableQuantity(result.inventories, INVENTORY.value)
-            }
-            else{
-                AVAILABLEQUANTITY.innerHTML = result.quantity;
+            catch (err) {
+                console.log(err)
             }
             
             return result
@@ -346,8 +352,22 @@ document.addEventListener('DOMContentLoaded', function(){
         TOTALBEFORETAX.value = sum.toFixed(2)
         // Change with your Tax !!!!!
         let tax = 0
-        if (TAXBUTTON.checked && KIND.value == 'sell'){
-            tax = parseFloat(TAXFIELD.value) / 100
+        let discount = 0
+        if (KIND.value == 'sell'){    
+            ACTIVATEBUTTON.forEach((element, index) => {
+                if (element.checked){
+                    if (index === 0) {
+                        tax = parseFloat(ACTIVATEFIELD[index].value) / 100
+                    }
+                    else if (index === 1) {
+                        discount = parseFloat(ACTIVATEFIELD[index].value) / 100
+                    }
+                }
+            })
+        }
+        DISCOUNTVALUE.value = (TOTALBEFORETAX.value * discount).toFixed(2)
+        if (discount){
+            TOTALBEFORETAX.value = (TOTALBEFORETAX.value - DISCOUNTVALUE.value).toFixed(2)
         }
         TAX.value = (TOTALBEFORETAX.value * tax).toFixed(2)
         TOTALAFTERTAX.value = (parseFloat(TOTALBEFORETAX.value) + parseFloat(TAX.value)).toFixed(2)
@@ -496,5 +516,17 @@ document.addEventListener('DOMContentLoaded', function(){
     function moveNumbers(element){
         currentPage = parseInt(element.dataset.id)
         searchRows()
+    }
+
+    function checkActive(element){
+        let val = element.checked
+        console.log(val)
+        let inputField = element.parentNode.querySelector('input[type="text"]')
+        if (val && KIND.value == 'sell'){
+            inputField.disabled = false
+        }
+        else{
+            inputField.disabled = true
+        }
     }
 })

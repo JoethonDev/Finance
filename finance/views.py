@@ -18,7 +18,9 @@ import datetime
 # Functions
 def companyDetails():
     data = Settings.objects.first()
-    return data.serialize()
+    if data :
+        return data.serialize()
+    return {}
 
 # JSON Requests
 def getInfo(request, id=None, name=None):
@@ -562,7 +564,6 @@ def transactions(request):
             for transaction in currentPage
         ]
 
-
         if refreshCondition == True:
             return render(request, 'finance/transactions.html', {
                 'users' : users,
@@ -572,7 +573,8 @@ def transactions(request):
                 'currentPage' : currentPage,
                 'rows' : int(rowsNumber),
                 'rowsOptions' : [1,3,5,10,20,50,100],
-                'arName' : companyDetails()['arName']
+                'arName' : companyDetails()['arName'],
+                'taxes' : companyDetails()['taxes'] or 0
             })
         else :
             hasPrevious = currentPage.has_previous()
@@ -591,14 +593,15 @@ def transactions(request):
         transactionType = data['transactionType']
         user = data['user']
         items = data['items']
-        totalPrice = data['totalPrice']
-        tax = data['tax']
+        totalPrice = math.trunc(float(data['totalPrice']) * 100) / 100
+        tax = math.trunc(float(data['tax']) * 100) / 100
+        discount = data['discount']
         changePrice = data['changePrice']
-        print(changePrice)
+        
         if not items:
             return JsonResponse({'message' : 'Access Forbidden!'}, status=403)
         # Change User to user model instead of saving as string [TODO]
-        transaction = Transactions.objects.create(transactionType=transactionType, totalPrice=totalPrice, user=user, tax=tax)
+        transaction = Transactions.objects.create(transactionType=transactionType, totalPrice=totalPrice, user=user, tax=tax, discount=discount)
         for product in items:
             price = math.trunc(float(product['price']) * 100) / 100
             # inventory of the item
@@ -645,6 +648,19 @@ def transactions(request):
             inventory.save()
 
 
+        """
+                8.5   100 => 850 / 100 => 
+                8.5%  100%
+        """
+        # Save Taxes rate
+        settingsData = Settings.objects.first()
+        price = (math.trunc(totalPrice * 100) - math.trunc(tax * 100)) / 100
+        taxPercent = ((math.trunc(tax * 100) * 100) / (math.trunc(price * 100)))
+        if settingsData:
+            settingsData.taxes = taxPercent
+            settingsData.save()
+        else :
+            Settings.objects.create(taxes=taxPercent)
         return JsonResponse({'message' : 'تم اضافه الفاتوره بنجاح'}, status=200)
 
 @login_required(login_url="loginView")
@@ -664,13 +680,11 @@ def invoice(request, id):
         item['pricePerItem'] = math.trunc(item['pricePerItem'] * 100) / 100
         item['total'] = math.trunc(item['quantity'] * item['pricePerItem'] * 100) / 100
 
-
-    transaction['totalBeforeTax'] = (math.trunc(transaction['totalPrice'] * 100) - math.trunc(transaction['tax']) * 100) / 100
+    transaction['totalBeforeTax'] = (math.trunc(transaction['totalPrice'] * 100) - math.trunc(transaction['tax'] * 100)) / 100
 
     # pdf = generate_pdf('finance/invoice.html', {'transaction' : transaction})
     # return render_to_pdf_response('finance/invoice.html', {'transaction' : transaction})
-    return render(request, 'finance/invoice.html', {'transaction' : transaction})
-
+    return render(request, 'finance/invoice.html', {'transaction' : transaction, **companyDetails()})
 
 @login_required(login_url="loginView")
 def inventoryReport(request, id):
@@ -738,8 +752,9 @@ def inventoryReport(request, id):
     for val in categories.values():
         data['categories'].append(val)
     
+    
 
-    return render(request, 'finance/inventoryReport.html', {'data' : data})
+    return render(request, 'finance/inventoryReport.html', {'data' : data, **companyDetails()})
 
 @login_required(login_url="loginView")
 def itemReport(request, id):
@@ -824,7 +839,7 @@ def itemReport(request, id):
             'sellTable' : 'فاتوره المبيعات'
         }
     ]
-    return render(request, 'finance/itemReport.html', {'data' : data})
+    return render(request, 'finance/itemReport.html', {'data' : data, **companyDetails()})
     # return JsonResponse({'data' : data}, status=200)
 
 @login_required(login_url="loginView")
@@ -900,8 +915,7 @@ def categoryReport(request, id):
         data['categories'].append(val)
     
 
-    return render(request, 'finance/inventoryReport.html', {'data' : data})
-
+    return render(request, 'finance/inventoryReport.html', {'data' : data, **companyDetails()})
 
 def reportPage(request):
     """
@@ -934,7 +948,7 @@ def reportPage(request):
     elif kind == 'general' :
         template = 'finance/itemReportGeneral.html'
     elif kind == 'details' :
-        template = 'finance/itemReportGeneral.html'
+        template = 'finance/itemReportDetails.html'
 
     # If both Params of any field is empty return Error
     if (not fromItem and not toItem) :
@@ -1028,6 +1042,10 @@ def reportPage(request):
             data['toInventory'] = toInventory.inventory
 
         items = Items.objects.filter(**kwrags).order_by('pk')
+        if not data['fromItem']:
+            data['fromItem'] = items[0].item
+        if not data['toItem']:
+            data['toItem'] = items[len(items) - 1].item
         # (Name - Code - Quantity - Unit - Income Balance - Outcome Balance - Income Quantity - Outcome Quantity - Current Quantity - Quantity Of Start) 
         for item in items:
             kwrags = {
@@ -1074,10 +1092,10 @@ def reportPage(request):
 
     elif kind == 'details':
         items = Items.objects.filter(**kwrags).order_by('pk')
-
         # Name - Code - Unit - Start Quantity
         # Table => [ Income Quantity - Outcome Quantity - Current Quantity of this transaction - Income Balance 
         # - Outcome Balance - Client - Transaction Type]
+
         for item in items :
             name  = item.item
             code  = item.code
@@ -1092,7 +1110,7 @@ def reportPage(request):
             totalOutcomingBalance = 0
             table = []
             for transaction in item.transactionsList.all().order_by('pk'):
-                price = transaction.price
+                price = math.trunc(transaction.price * 100) / 100
                 quantityPerTransaction = transaction.quantity
                 inventory = transaction.inventory.inventory if transaction.inventory else None
                 client = transaction.transaction.user
@@ -1103,7 +1121,7 @@ def reportPage(request):
                     transactionType = 'فاتوره مبيعات'
                     currentPerTransaction -= quantityPerTransaction
                     totalOutcomingQuantity += quantityPerTransaction
-                    totalOutcomingBalance += total
+                    totalIncomingBalance += total
                     incomeQuantity = 0
                     outcomeQuantity = quantityPerTransaction
                     
@@ -1111,19 +1129,22 @@ def reportPage(request):
                     transactionType = 'فاتوره مشتريات'
                     currentPerTransaction += quantityPerTransaction
                     totalIncomingQuantity += quantityPerTransaction
-                    totalIncomingBalance += total
+                    totalOutcomingBalance += total
                     incomeQuantity = quantityPerTransaction
                     outcomeQuantity = 0
                 
-                table.append({
-                    'incomeQuantity' : incomeQuantity,
-                    'outcomeQuantity' : outcomeQuantity,
-                    'currentQuantity' : currentPerTransaction,
-                    'transactionType' : transactionType,
-                    'inventory' : inventory,
-                    'client' : client,
-                    'total' : total,
-                })
+                
+                if transaction in item.transactionsList.filter(**time):
+                    table.append({
+                        'price' : price,
+                        'incomeQuantity' : incomeQuantity,
+                        'outcomeQuantity' : outcomeQuantity,
+                        'currentQuantity' : currentPerTransaction,
+                        'transactionType' : transactionType,
+                        'inventory' : inventory,
+                        'client' : client,
+                        'total' : total,
+                    })
             
             data['items'].append({
                 'item' : name,
@@ -1136,15 +1157,15 @@ def reportPage(request):
                 'totalIncomingBalance' : totalIncomingBalance,
                 'totalOutcomingBalance' : totalOutcomingBalance,
                 'table' : table,
-                'profit' : totalOutcomingBalance - totalIncomingBalance,
+                'profit' : math.trunc((totalIncomingBalance - totalOutcomingBalance) * 100) / 100,
             })
         
-
     else :
         return JsonResponse({'message' : 'Invalid Route!'}, status=404)
         
     return render(request, template, {
-        'data' : data
+        'data' : data,
+        **companyDetails()
     })
 
 @login_required(login_url="loginView")
@@ -1263,3 +1284,91 @@ def settings(request):
     else :
         return JsonResponse({'message' : 'Invalid Route'}, status=404)
 
+
+import docx
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.enum.table import WD_ALIGN_VERTICAL as WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
+from docx.enum.style import WD_STYLE_TYPE
+from django.http import StreamingHttpResponse, FileResponse
+from docx.oxml import OxmlElement
+from docx.oxml.ns import nsdecls
+import aspose.words as aw
+
+
+import io
+
+def generate_word(request):
+    data = Settings.objects.first().serialize()
+    document = docx.Document()
+    section = document.sections[0]
+
+    # Setting document for arabic style
+    # font = document.font
+    # font.complex_script = True
+    # font.rtl = True
+    # document.styles['Arabic'].font.language = 'ar'
+
+    # Header 
+    header = section.header
+    
+    # Header Table
+    t1 = document.add_table(rows=4, cols=3)
+    tblPr = t1._element.xpath('.//w:tblPr')[0]
+
+    
+    bidiVisual = OxmlElement('w:bidiVisual')
+    tblPr.append(bidiVisual)
+
+    # Add Data
+    row1 = t1.rows[0].cells
+    row1[0].text = data['arName']
+    row1[2].text = f'رقم الملف الضريبي : {data["taxFileNumber"]}'
+
+    row2 = t1.rows[1].cells
+    row2[0].text = data['engName']
+    row2[2].text = f"رقم التسجيل الضريبي : {data['taxRegistrationNumber']}"
+
+    row3 = t1.rows[2].cells
+    row3[0].text = f"العنوان : {data['address']}"
+    row3[2].text = f"البطاقه الضريبيه : {data['tax3Number']}"
+
+    row4 = t1.rows[3].cells
+    row4[0].text = f"تليفون : {data['phoneNumber']}"
+
+    # Remove Border
+    for row in t1.rows:
+        for cell in row.cells:
+            tc = cell._element.tcPr
+            tc.left = None
+            tc.top = None
+            tc.right = None
+            tc.bottom = None
+            cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+            cell.paragraphs[0].alignment = WD_TABLE_ALIGNMENT.CENTER
+    
+
+    header.table = t1
+    # send response
+    # save document info
+    # buffer = io.BytesIO()
+    document.save('thisisdoc.docx')  # save your memory stream
+    # buffer.seek(0)  # rewind the stream
+    doc = aw.Document("thisisdoc.docx")
+
+    # Save as PDF
+    doc.save("PDF.pdf")
+
+    response = HttpResponse("PDF.pdf", content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="'"PDF.pdf"'"'
+
+    # put them to streaming content response 
+    # within docx content_type
+    # response = StreamingHttpResponse(
+    #     streaming_content=buffer,  # use the stream's content
+    #     content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    # )
+
+    # response['Content-Disposition'] = 'attachment;filename=Test.docx'
+    response["Content-Encoding"] = 'UTF-8'
+    return response
+    pass

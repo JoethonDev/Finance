@@ -32,6 +32,7 @@ class Settings(models.Model):
         return {
             'engName' : self.companyEnglishName,
             'arName' : self.companyArabicName,
+            'taxes' : self.taxes,
             'taxFileNumber' : self.taxFileNumber,
             'taxRegistrationNumber' : self.taxRegistrationNumber,
             'tax3Number' : self.tax3Number,
@@ -163,6 +164,7 @@ class Transactions(models.Model):
     transactionType = models.CharField(max_length=256, blank=False, choices=TRANSACTIONS)
     totalPrice = models.FloatField(blank=False)
     tax = models.FloatField(blank=False)
+    discount = models.FloatField(blank=False, null=True)
     items = models.ManyToManyField(Items, through='Transactions_Items', related_name='items')
     # user = models.ForeignKey(Users, on_delete=models.DO_NOTHING)
     user = models.CharField(max_length=256)
@@ -191,6 +193,7 @@ class Transactions(models.Model):
             'tax' : self.tax,
             'totalPrice' : self.totalPrice,
             'items' : itemsList,
+            'discount' : self.discount,
             'dateTime' : self.dateTime.strftime("%d/%m/%Y"),
         }
 

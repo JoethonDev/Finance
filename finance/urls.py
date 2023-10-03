@@ -24,5 +24,6 @@ urlpatterns = [
     path('reportPage', reportPage, name='reportPage'),
     path('settings', settings, name='settings'),
     path('profile', profile, name='profile'),
+    path('generateWord', generate_word, name='generateWord'),
 
 ]

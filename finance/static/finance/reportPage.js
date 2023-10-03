@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
         element.addEventListener('click', (e)=> {
             let id  =  e.target.id
             KIND.value = id
+            console.log(KIND.value)
             if (id == 'details'){
                 INVENTORIES.forEach(e => {
                     e.classList.add('d-none')

@@ -1,0 +1,171 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <pdf:language name=""/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير بضاعه {{ data.item }}</title>
+    <link rel="stylesheet" href="{% static 'bootstrap.rtl.min.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/fontawesome-free-6.4.2-web/fontawesome-free-6.4.2-web/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/fontawesome-free-6.4.2-web/fontawesome-free-6.4.2-web/css/solid.min.css' %}">
+    <style>
+        .w-220{
+            min-width: 220px;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 5mm auto;
+            border: 1px #D3D3D3 solid;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        
+
+        @page {
+            size: A4;
+            /* margin-top: 1000px; */
+        }
+        @media print {
+            html, body {
+                width: 210mm;
+                height: 297mm;        
+            }
+            .page {
+                margin: 0;
+                /* border: initial;
+                border-radius: initial;
+                width: initial;
+                min-height: initial;
+                box-shadow: initial;
+                background: initial; */
+                page-break-after: always;
+            }
+            
+        }
+    </style>
+
+<body>
+    <pdf:language name=""/>
+    <div class="container-fluid mt-5">
+        {% for item in data.items %}
+            <div class="page">
+                {% include 'finance/company.html' %}
+
+                <!-- Start Item Title -->
+                <div class="title text-center border border-dark border border-3 p-3 m-auto mt-5 mb-5 w-50 ">
+                    <h5>تقرير بضاعه {{ item.item }}</h5>
+                </div>
+                <!-- End Item Title -->
+
+                <!-- Start overview Details -->
+                <div class="item">
+                    <div class="row justify-content-between mb-4 w-220">
+                        <div class="col-auto">
+                            <h6>صنف : {{ item.item }}</h6>
+                        </div>
+                        <div class="col-auto">
+                            <h6>الكود: {{ item.code }}</h6>
+                        </div>
+                    </div>
+                    <div class="row justify-content-between mb-4 w-220">
+                        <div class="col-auto">
+                            <h6>الوحده : {{ item.unit }}</h6>
+                        </div>
+                        <div class="col-auto">
+                            <h6>الكميه الحاليه : {{ item.quantity }}</h6>
+                        </div>
+                    </div>
+                    <div class="row justify-content-between mb-4 w-220">
+                        <div class="col-auto">
+                            <h6>الرصيد الافتتاحي : {{ item.quantityOfStart }}</h6>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End overview Details -->
+
+
+                <!-- Start Table -->
+                <hr>
+                <div class="containerCategory mb-5 mt-5">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <div class="header">
+                            <h3>المخازن</h3>
+                        </div>
+                    </div>
+                    <table class="table table-striped">
+                        <thead>
+                            <th scope="col">نوع التحويل</th>
+                            <th scope="col">الكميه</th>
+                            <th scope="col">الكميه الوارده</th>
+                            <th scope="col">الكميه الصادره</th>
+                            <th scope="col">سعر الصنف</th>
+                            <th scope="col">المخزن</th>
+                            <th scope="col">العميل</th>
+                            <th scope="col">اجمالي القيمه نقدا</th>
+                        </thead>
+                        <tbody>
+                            {% for itemInfo in item.table %}
+                                <tr>
+                                    <td>{{ itemInfo.transactionType }}</td>
+                                    <td>{{ itemInfo.currentQuantity }}</td>
+                                    <td>{{ itemInfo.incomeQuantity }}</td>
+                                    <td>{{ itemInfo.outcomeQuantity }}</td>
+                                    <td>{{ itemInfo.price }}</td>
+                                    <td>{{ itemInfo.inventory }}</td>
+                                    <td>{{ itemInfo.client }}</td>
+                                    <td>{{ itemInfo.total }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table -->
+
+                <!-- Start Total -->
+                <div class="total">
+                    <div class="row mb-3">
+                        <label for="totalBeforeTax" class="col-4 col-form-label">اجمالي الكميه الوارده</label>
+                        <div class="col-4">
+                            <input type="text" class="form-control" id="totalBeforeTax" disabled value="{{ item.totalIncomingQuantity }}">
+                        </div>
+                    </div>
+                    <div class="row discount mb-3">
+                        <label for="discount" class="col-4 col-form-label">اجمالي الكميه الصادره</label>
+                        <div class="col-4">
+                            <input type="text" class="form-control" id="discount" disabled value="{{ item.totalOutcomingQuantity }}">
+                        </div>
+                    </div>
+                    <div class="row tax mb-3">
+                        <label for="tax" class="col-4 col-form-label">اجمالي الواردات نقدا</label>
+                        <div class="col-4">
+                            <input type="text" class="form-control" id="tax" disabled value="{{ item.totalOutcomingBalance }}">
+                        </div>
+                    </div>
+                    <div class="row totalAfterTax mb-3">
+                        <label for="totalAfterTax" class="col-4 col-form-label">اجمالي الصادرات نقدا</label>
+                        <div class="col-4">
+                            <input type="text" class="form-control" id="totalAfterTax" disabled value="{{ item.totalIncomingBalance }}">
+                        </div>
+                    </div>
+                    <div class="row totalAfterTax mb-3">
+                        <label for="totalAfterTax" class="col-4 col-form-label">صافي الربح</label>
+                        <div class="col-4">
+                            <input type="text" class="form-control" id="totalAfterTax" disabled value="{{ item.profit }}">
+                        </div>
+                    </div>
+                </div>
+                <!-- End Total -->
+            </div>
+        {% endfor %}
+
+    </div>
+    
+</body>
+</html>
