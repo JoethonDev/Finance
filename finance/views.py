@@ -18,7 +18,9 @@ import datetime
 # Functions
 def companyDetails():
     data = Settings.objects.first()
-    return data.serialize()
+    if data :
+        return data.serialize()
+    return {}
 
 # JSON Requests
 def getInfo(request, id=None, name=None):
@@ -562,7 +564,6 @@ def transactions(request):
             for transaction in currentPage
         ]
 
-
         if refreshCondition == True:
             return render(request, 'finance/transactions.html', {
                 'users' : users,
@@ -572,7 +573,8 @@ def transactions(request):
                 'currentPage' : currentPage,
                 'rows' : int(rowsNumber),
                 'rowsOptions' : [1,3,5,10,20,50,100],
-                'arName' : companyDetails()['arName']
+                'arName' : companyDetails()['arName'],
+                'taxes' : companyDetails()['taxes'] or 0
             })
         else :
             hasPrevious = currentPage.has_previous()
@@ -591,14 +593,15 @@ def transactions(request):
         transactionType = data['transactionType']
         user = data['user']
         items = data['items']
-        totalPrice = data['totalPrice']
-        tax = data['tax']
+        totalPrice = math.trunc(float(data['totalPrice']) * 100) / 100
+        tax = math.trunc(float(data['tax']) * 100) / 100
+        discount = data['discount']
         changePrice = data['changePrice']
-        print(changePrice)
+        
         if not items:
             return JsonResponse({'message' : 'Access Forbidden!'}, status=403)
         # Change User to user model instead of saving as string [TODO]
-        transaction = Transactions.objects.create(transactionType=transactionType, totalPrice=totalPrice, user=user, tax=tax)
+        transaction = Transactions.objects.create(transactionType=transactionType, totalPrice=totalPrice, user=user, tax=tax, discount=discount)
         for product in items:
             price = math.trunc(float(product['price']) * 100) / 100
             # inventory of the item
@@ -645,6 +648,19 @@ def transactions(request):
             inventory.save()
 
 
+        """
+                8.5   100 => 850 / 100 => 
+                8.5%  100%
+        """
+        # Save Taxes rate
+        settingsData = Settings.objects.first()
+        price = (math.trunc(totalPrice * 100) - math.trunc(tax * 100)) / 100
+        taxPercent = ((math.trunc(tax * 100) * 100) / (math.trunc(price * 100)))
+        if settingsData:
+            settingsData.taxes = taxPercent
+            settingsData.save()
+        else :
+            Settings.objects.create(taxes=taxPercent)
         return JsonResponse({'message' : 'تم اضافه الفاتوره بنجاح'}, status=200)
 
 @login_required(login_url="loginView")
@@ -664,8 +680,7 @@ def invoice(request, id):
         item['pricePerItem'] = math.trunc(item['pricePerItem'] * 100) / 100
         item['total'] = math.trunc(item['quantity'] * item['pricePerItem'] * 100) / 100
 
-
-    transaction['totalBeforeTax'] = (math.trunc(transaction['totalPrice'] * 100) - math.trunc(transaction['tax']) * 100) / 100
+    transaction['totalBeforeTax'] = (math.trunc(transaction['totalPrice'] * 100) - math.trunc(transaction['tax'] * 100)) / 100
 
     # pdf = generate_pdf('finance/invoice.html', {'transaction' : transaction})
     # return render_to_pdf_response('finance/invoice.html', {'transaction' : transaction})
@@ -738,8 +753,9 @@ def inventoryReport(request, id):
     for val in categories.values():
         data['categories'].append(val)
     
+    
 
-    return render(request, 'finance/inventoryReport.html', {'data' : data})
+    return render(request, 'finance/inventoryReport.html', {'data' : data, **companyDetails()})
 
 @login_required(login_url="loginView")
 def itemReport(request, id):
@@ -824,7 +840,7 @@ def itemReport(request, id):
             'sellTable' : 'فاتوره المبيعات'
         }
     ]
-    return render(request, 'finance/itemReport.html', {'data' : data})
+    return render(request, 'finance/itemReport.html', {'data' : data, **companyDetails()})
     # return JsonResponse({'data' : data}, status=200)
 
 @login_required(login_url="loginView")
@@ -900,7 +916,7 @@ def categoryReport(request, id):
         data['categories'].append(val)
     
 
-    return render(request, 'finance/inventoryReport.html', {'data' : data})
+    return render(request, 'finance/inventoryReport.html', {'data' : data, **companyDetails()})
 
 
 def reportPage(request):
@@ -1028,6 +1044,10 @@ def reportPage(request):
             data['toInventory'] = toInventory.inventory
 
         items = Items.objects.filter(**kwrags).order_by('pk')
+        if not data['fromItem']:
+            data['fromItem'] = items[0].item
+        if not data['toItem']:
+            data['toItem'] = items[len(items) - 1].item
         # (Name - Code - Quantity - Unit - Income Balance - Outcome Balance - Income Quantity - Outcome Quantity - Current Quantity - Quantity Of Start) 
         for item in items:
             kwrags = {
@@ -1144,7 +1164,8 @@ def reportPage(request):
         return JsonResponse({'message' : 'Invalid Route!'}, status=404)
         
     return render(request, template, {
-        'data' : data
+        'data' : data,
+        **companyDetails()
     })
 
 @login_required(login_url="loginView")

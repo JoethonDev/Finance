@@ -79,8 +79,8 @@
               <input type="text" class="form-control" id="code" placeholder="" name="code">
             </div>
             <div class="col-auto">
-              <label for="inventory">المخزن</label>
-              <select class="form-select" name="inventory" id="inventory">
+              <label for="inventoryField">المخزن</label>
+              <select class="form-select" name="inventory" id="inventoryField">
                 <option selected disabled value="">--المخزن--</option>
                 {% for inventory in inventories %}
                   <option value="{{ inventory.id }}">{{ inventory.inventory }}</option>
@@ -118,9 +118,15 @@
             </div>
             <div class="col-auto taxField">
               <label for="taxes" id="">الضرايب</label>
-              <input type="text" class="form-control" id="taxes" placeholder="" name="taxes" disabled>
-              <input type="checkbox" name="taxActivated" id="taxActivated" value="true" >
+              <input type="text" class="form-control activatedFields" id="taxes" placeholder="" name="taxes" disabled value='{{ taxes }}'> 
+              <input type="checkbox" class="activated" name="taxActivated" id="taxActivated" value="true" >
               <label for="taxActivated" class="text-muted" id="">تفعيل الضرائب</label>
+            </div>
+            <div class="col-auto taxField">
+              <label for="discount" id="">خصم</label>
+              <input type="text" class="form-control activatedFields" id="discount" placeholder="" name="discount" disabled value=0>
+              <input type="checkbox" class="activated" name="discountActivate" id="discountActivate" value="true" >
+              <label for="discountActivate" class="text-muted" id="">تفعيل الخصومات</label>
             </div>
             <div class="col-auto btn-contianer align-items-center">
               <button type="submit" class="btn btn-primary">اضافه</button>
@@ -131,6 +137,10 @@
             <div class="col mb-4 w-25">
               <label for="totalBeforeTax">الاجمالي بدون الضرايب</label>
               <input type="text" class="form-control" id="totalBeforeTax" placeholder="" name="totalBeforeTax" disabled value=0>
+            </div>
+            <div class="col mb-4 w-25">
+              <label for="discountValue">الخصم</label>
+              <input type="text" class="form-control" id="discountValue" placeholder="" name="discountValue" disabled value=0>
             </div>
             <div class="col mb-4 w-25">
               <label for="tax">الضرايب</label>

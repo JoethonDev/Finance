@@ -43,8 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial settings
     removeAlerts()
     inputSwitch()
-    console.log(URL[URL.length - 1].split('?')[0])
-    pageSwitch(URL[URL.length - 1].split('?')[0])
+    pageSwitch(URL[URL.length - 1].split('?')[0].toLowerCase())
     document.querySelector(`input[name="pageSwitch"][id="${URL[URL.length - 1].split('?')[0]}"]`).checked = true
     getInfoByText(CATEGORYITEM, displayCategoryInfo)
     getInfoByText(CATEGORYPARENT, displayCategoryInfo)
@@ -206,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function pageSwitch(page){
-        kind = page
+        kind = page.toLowerCase()
         window.history.pushState(null, '', `${kind}`)
         if (page == 'categories'){
             CATEGORYPAGE.forEach(e => {

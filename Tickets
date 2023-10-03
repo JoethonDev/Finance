@@ -68,4 +68,7 @@ Login Page :
 => Settings System [Tax - company name arabic - company name english - 3 Fields numbers of taxes - phone No. - Address] [Done]
 => Navigation Bar set active to current page using Js + Change Colors + Add Profile link + Add Report Page Link [Done]
 => Make Detailed Item Report
-=> Reports [Separate Company Details from HTML and use it as include] + Generate Reports Through Python with traditional way of making pdf 
+=> Reports [Separate Company Details from HTML and use it as include] [Done] + Generate Reports Through Python with traditional way of making pdf 
+=> Make Discount for Users + Save Taxes in Database [Done]
+=> Read Data from Word Using Python!
+=> Make Portable Env  
