@@ -915,7 +915,8 @@ def categoryReport(request, id):
         data['categories'].append(val)
     
 
-    return render(request, 'finance/inventoryReport.html', {'data' : data, **companyDetails()})
+    return render(request, 'finance/inventoryReport.html', {'data' : data})
+
 
 def reportPage(request):
     """
