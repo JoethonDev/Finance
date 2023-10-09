@@ -934,7 +934,7 @@ def reportPage(request):
     data = {}
     data['items'] = []
     ctx = {
-        'arName' : companyDetails()['arName']
+        **companyDetails()
     }
 
     # Get Params
